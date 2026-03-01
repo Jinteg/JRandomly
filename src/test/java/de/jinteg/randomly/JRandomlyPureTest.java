@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 /**
  * This test verifies that the locale view of JRandomly is deterministic and does not affect the base stream.
@@ -30,6 +31,126 @@ class JRandomlyPureTest {
         JRandomly r = JRandomly.randomly();
         long randomNumber = r.longBetween(0L, 10_000L);
         assertThat(randomNumber).isBetween(0L, 10_000L);
+    }
+
+    @Test
+    void intWithExactDigits() {
+        JRandomly r = JRandomly.randomly();
+        int value = r.intWithExactDigits(2);
+        assertThat(value).isBetween(10, 99);
+    }
+
+    @Test
+    void intWithMaxDigits() {
+        JRandomly r = JRandomly.randomly();
+        int value = r.intWithMaxDigits(2);
+        assertThat(value).isBetween(0, 99);
+    }
+
+    @Test
+    void longWithExactDigits() {
+        JRandomly r = JRandomly.randomly();
+        long value = r.longWithExactDigits(5);
+        assertThat(value).isBetween(10_000L, 99_999L);
+    }
+
+    @Test
+    void longWithMaxDigits() {
+        JRandomly r = JRandomly.randomly();
+        long value = r.longWithMaxDigits(5);
+        assertThat(value).isBetween(0L, 99_999L);
+    }
+
+    @Test
+    void intWithExactDigitsBoundaryOneDigit() {
+        JRandomly r = JRandomly.randomly();
+        int value = r.intWithExactDigits(1);
+        assertThat(value).isBetween(0, 9);
+    }
+
+    @Test
+    void intWithExactDigitsBoundaryTenDigits() {
+        JRandomly r = JRandomly.randomly();
+        int value = r.intWithExactDigits(10);
+        assertThat(value).isBetween(1_000_000_000, Integer.MAX_VALUE);
+    }
+
+    @Test
+    void intWithExactDigitsRejectsInvalidDigits() {
+        JRandomly r = JRandomly.randomly();
+        assertThatThrownBy(() -> r.intWithExactDigits(0))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> r.intWithExactDigits(11))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void intWithMaxDigitsBoundaryOneDigit() {
+        JRandomly r = JRandomly.randomly();
+        int value = r.intWithMaxDigits(1);
+        assertThat(value).isBetween(0, 9);
+    }
+
+    @Test
+    void intWithMaxDigitsBoundaryTenDigits() {
+        JRandomly r = JRandomly.randomly();
+        int value = r.intWithMaxDigits(10);
+        assertThat(value).isBetween(0, Integer.MAX_VALUE);
+    }
+
+    @Test
+    void intWithMaxDigitsRejectsInvalidDigits() {
+        JRandomly r = JRandomly.randomly();
+        assertThatThrownBy(() -> r.intWithMaxDigits(0))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> r.intWithMaxDigits(11))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void longWithExactDigitsBoundaryOneDigit() {
+        JRandomly r = JRandomly.randomly();
+        long value = r.longWithExactDigits(1);
+        assertThat(value).isBetween(0L, 9L);
+    }
+
+    @Test
+    void longWithExactDigitsBoundaryNineteenDigits() {
+        JRandomly r = JRandomly.randomly();
+        long value = r.longWithExactDigits(19);
+        assertThat(value).isBetween(1_000_000_000_000_000_000L, Long.MAX_VALUE);
+    }
+
+    @Test
+    void longWithExactDigitsRejectsInvalidDigits() {
+        JRandomly r = JRandomly.randomly();
+        assertThatThrownBy(() -> r.longWithExactDigits(0))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> r.longWithExactDigits(20))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void longWithMaxDigitsBoundaryOneDigit() {
+        JRandomly r = JRandomly.randomly();
+        long value = r.longWithMaxDigits(1);
+        assertThat(value).isBetween(0L, 9L);
+    }
+
+    @Test
+    void longWithMaxDigitsBoundaryNineteenDigits() {
+        JRandomly r = JRandomly.randomly();
+        long value = r.longWithMaxDigits(19);
+        assertThat(value).isBetween(0L, Long.MAX_VALUE);
+    }
+
+    @Test
+    void longWithMaxDigitsRejectsInvalidDigits() {
+        JRandomly r = JRandomly.randomly();
+        assertThatThrownBy(() -> r.longWithMaxDigits(0))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> r.longWithMaxDigits(20))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

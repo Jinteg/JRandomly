@@ -5,10 +5,7 @@ import de.jinteg.randomly.core.DateTimeRandomly;
 import de.jinteg.randomly.core.IdRandomly;
 import de.jinteg.randomly.core.TextRandomly;
 import de.jinteg.randomly.domain.finance.FinanceRandomly;
-import de.jinteg.randomly.internal.ConfigLoader;
-import de.jinteg.randomly.internal.JRandomlyConfig;
-import de.jinteg.randomly.internal.ReplayFileWriter;
-import de.jinteg.randomly.internal.SeedDerivation;
+import de.jinteg.randomly.internal.*;
 import de.jinteg.randomly.maybe.Maybe;
 import de.jinteg.randomly.maybe.MaybeContext;
 import de.jinteg.randomly.maybe.MaybeString;
@@ -323,6 +320,62 @@ public final class JRandomly {
     }
 
     /**
+     * Returns a random int with exactly {@code digits} decimal digits.
+     * <p>
+     * Special case: for {@code digits == 1}, values are in the range [0, 9].
+     *
+     * @param digits number of digits (1 to 10)
+     * @return random int with exactly {@code digits} digits
+     */
+    public int intWithExactDigits(int digits) {
+        int lowerInclusive = NumericDigitBounds.intLowerExact(digits, false);
+        int upperInclusive = NumericDigitBounds.intUpperExact(digits);
+        if (lowerInclusive > upperInclusive) {
+            throw new IllegalArgumentException("No int range available for digits=" + digits);
+        }
+        return intBetween(lowerInclusive, upperInclusive);
+    }
+
+    /**
+     * Returns a random int with at most {@code maxDigits} decimal digits.
+     *
+     * @param maxDigits maximum number of digits (1 to 10)
+     * @return random int with at most {@code maxDigits} digits
+     */
+    public int intWithMaxDigits(int maxDigits) {
+        int upperInclusive = NumericDigitBounds.intUpperMax(maxDigits);
+        return intBetween(0, upperInclusive);
+    }
+
+    /**
+     * Returns a random long with exactly {@code digits} decimal digits.
+     * <p>
+     * Special case: for {@code digits == 1}, values are in the range [0, 9].
+     *
+     * @param digits number of digits (1 to 19)
+     * @return random long with exactly {@code digits} digits
+     */
+    public long longWithExactDigits(int digits) {
+        long lowerInclusive = NumericDigitBounds.longLowerExact(digits, false);
+        long upperInclusive = NumericDigitBounds.longUpperExact(digits);
+        if (lowerInclusive > upperInclusive) {
+            throw new IllegalArgumentException("No long range available for digits=" + digits);
+        }
+        return longBetween(lowerInclusive, upperInclusive);
+    }
+
+    /**
+     * Returns a random long with at most {@code maxDigits} decimal digits.
+     *
+     * @param maxDigits maximum number of digits (1 to 19)
+     * @return random long with at most {@code maxDigits} digits
+     */
+    public long longWithMaxDigits(int maxDigits) {
+        long upperInclusive = NumericDigitBounds.longUpperMax(maxDigits);
+        return longBetween(0L, upperInclusive);
+    }
+
+    /**
      * Returns a random double in the range [lowerInclusive, upperExclusive).
      *
      * @param lowerInclusive lower bound (inclusive)
@@ -343,7 +396,7 @@ public final class JRandomly {
      * Example: {@code doubleBetween(2, 0.0, 100.0)} may return {@code 42.37}.
      * <p>
      * Note: {@code double} provides ~15 significant decimal digits (IEEE 754).
-     * For higher precision (e.g. 18 decimals in crypto/wei), use {@code BigDecimal} instead.
+     * For higher precision (e.g., 18 decimals in crypto/wei), use {@code BigDecimal} instead.
      *
      * @param decimalPlaces  number of decimal places (0 to 15)
      * @param lowerInclusive lower bound (inclusive)

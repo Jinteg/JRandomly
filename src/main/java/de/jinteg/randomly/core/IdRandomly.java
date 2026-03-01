@@ -1,6 +1,7 @@
 package de.jinteg.randomly.core;
 
 import de.jinteg.randomly.JRandomly;
+import de.jinteg.randomly.internal.NumericDigitBounds;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -115,6 +116,58 @@ public final class IdRandomly {
             throw new IllegalArgumentException("min must be >= 1 (IDs should be positive)");
         }
         return randomly.intBetween(min, max);
+    }
+
+    /**
+     * Returns a positive int ID with exactly {@code digits} decimal digits.
+     *
+     * @param digits number of digits (1 to 10)
+     * @return int ID with exactly {@code digits} digits
+     */
+    public int intIdWithExactDigits(int digits) {
+        int lowerInclusive = NumericDigitBounds.intLowerExact(digits, true);
+        int upperInclusive = NumericDigitBounds.intUpperExact(digits);
+        if (lowerInclusive > upperInclusive) {
+            throw new IllegalArgumentException("No int ID range available for digits=" + digits);
+        }
+        return randomly.intBetween(lowerInclusive, upperInclusive);
+    }
+
+    /**
+     * Returns a positive int ID with at most {@code maxDigits} decimal digits.
+     *
+     * @param maxDigits maximum number of digits (1 to 10)
+     * @return int ID with at most {@code maxDigits} digits
+     */
+    public int intIdWithMaxDigits(int maxDigits) {
+        int upperInclusive = NumericDigitBounds.intUpperMax(maxDigits);
+        return randomly.intBetween(1, upperInclusive);
+    }
+
+    /**
+     * Returns a positive long ID with exactly {@code digits} decimal digits.
+     *
+     * @param digits number of digits (1 to 19)
+     * @return long ID with exactly {@code digits} digits
+     */
+    public long longIdWithExactDigits(int digits) {
+        long lowerInclusive = NumericDigitBounds.longLowerExact(digits, true);
+        long upperInclusive = NumericDigitBounds.longUpperExact(digits);
+        if (lowerInclusive > upperInclusive) {
+            throw new IllegalArgumentException("No long ID range available for digits=" + digits);
+        }
+        return randomly.longBetween(lowerInclusive, upperInclusive);
+    }
+
+    /**
+     * Returns a positive long ID with at most {@code maxDigits} decimal digits.
+     *
+     * @param maxDigits maximum number of digits (1 to 19)
+     * @return long ID with at most {@code maxDigits} digits
+     */
+    public long longIdWithMaxDigits(int maxDigits) {
+        long upperInclusive = NumericDigitBounds.longUpperMax(maxDigits);
+        return randomly.longBetween(1L, upperInclusive);
     }
 
     // ---- String IDs ----
