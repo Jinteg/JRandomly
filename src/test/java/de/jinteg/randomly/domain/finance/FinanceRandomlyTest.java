@@ -1,6 +1,8 @@
 package de.jinteg.randomly.domain.finance;
 
 import de.jinteg.randomly.JRandomly;
+import de.jinteg.randomly.internal.catalog.NumberedPropertiesCatalog;
+import de.jinteg.randomly.internal.catalog.RawParserUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -12,6 +14,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class FinanceRandomlyTest {
+
+    private static List<String> allowedSymbolsFor(Locale locale) {
+        return NumberedPropertiesCatalog.loadList(
+                        "de/jinteg/randomly/catalog/finance/stocks",
+                        locale
+                ).stream()
+                .map(raw -> StockEntry.parse(RawParserUtil.parse(raw, StockEntry.COLUMN_COUNT)).symbol())
+                .toList();
+    }
+
+    private static final List<String> ALLOWED_US_SYMBOLS = allowedSymbolsFor(Locale.US);
+    private static final List<String> ALLOWED_DE_SYMBOLS = allowedSymbolsFor(Locale.GERMANY);
 
     @AfterEach
     void cleanup() {
@@ -27,7 +41,7 @@ class FinanceRandomlyTest {
         JRandomly r = JRandomly.randomly("FinanceTest#de");
         String sym = r.finance().stockSymbol();
 
-        assertThat(sym).isNotEmpty().hasSizeBetween(3, 10);
+        assertThat(sym).isIn(ALLOWED_DE_SYMBOLS);
     }
 
     @Test
@@ -38,23 +52,29 @@ class FinanceRandomlyTest {
         JRandomly r = JRandomly.randomly("FinanceTest#override");
         String sym = r.finance().stockSymbol(Locale.US);
 
-        assertThat(sym).isIn("AAPL", "MSFT", "TSLA", "AMZN", "ABNB", "ADBE", "GOOGL", "META", "NVDA", "JPM");
+        assertThat(sym).isIn(ALLOWED_US_SYMBOLS);
     }
 
     @Test
     void stock() {
+        // given
         System.setProperty("jrandomly.seed", "1");
         System.setProperty("jrandomly.locale", "de-DE");
 
+        // when
         JRandomly r = JRandomly.randomly("FinanceTest#stockEntry");
         StockEntry stockEntry = r.finance().stock(Locale.US);
+
+        // then
         assertThat(stockEntry).isNotNull();
-        assertThat(stockEntry.symbol()).isIn("AAPL", "MSFT", "TSLA", "AMZN", "ABNB", "ADBE", "GOOGL", "META", "NVDA", "JPM");
+        assertThat(stockEntry.symbol()).isIn(ALLOWED_US_SYMBOLS);
         assertThat(stockEntry.name()).isNotBlank();
         assertThat(stockEntry.marketCap()).isPositive();
         assertThat(stockEntry.price()).isPositive();
-
+        assertThat(stockEntry.currencyCode()).isEqualTo("USD");
+        assertThat(stockEntry.mic()).isNotEmpty();
     }
+
 
     @Test
     void stock_withLocale() {
@@ -64,7 +84,7 @@ class FinanceRandomlyTest {
         JRandomly r = JRandomly.randomly("FinanceTest#stockEntryLocale");
         StockEntry stockEntry = r.finance().stock(Locale.GERMANY);
         assertThat(stockEntry).isNotNull();
-        assertThat(stockEntry.symbol()).isNotEmpty().hasSizeBetween(3, 10);
+        assertThat(stockEntry.symbol()).isIn(ALLOWED_DE_SYMBOLS);
         assertThat(stockEntry.name()).isNotBlank();
         assertThat(stockEntry.marketCap()).isPositive();
         assertThat(stockEntry.price()).isPositive();
@@ -78,7 +98,7 @@ class FinanceRandomlyTest {
         JRandomly r = JRandomly.randomly("FinanceTest#stockEntryWOLocale");
         StockEntry stockEntry = r.finance().stock();
         assertThat(stockEntry).isNotNull();
-        assertThat(stockEntry.symbol()).isNotEmpty().hasSizeBetween(3, 10);
+        assertThat(stockEntry.symbol()).isIn(ALLOWED_DE_SYMBOLS);
         assertThat(stockEntry.name()).isNotBlank();
         assertThat(stockEntry.marketCap()).isPositive();
         assertThat(stockEntry.price()).isPositive();
@@ -97,7 +117,7 @@ class FinanceRandomlyTest {
     }
 
     @Test
-    void stockSymbol_usesConfiguredLocale() {
+    void currencyApi_returns_valid_values() {
         JRandomly r = JRandomly.randomly("FinanceTest#Currency");
         Currency currency = r.finance().currency();
         String currencyCode = r.finance().currencyCode();
@@ -136,6 +156,5 @@ class FinanceRandomlyTest {
 
         assertThat(currency1).isNotNull().isNotEqualTo(currency2);
     }
-
 }
 
