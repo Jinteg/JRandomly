@@ -3,10 +3,10 @@ package de.jinteg.randomly.domain.finance;
 import java.util.Arrays;
 
 /**
- * Stock entry with symbol, name, market cap, and price.
+ * Stock entry with symbol, companyName, market cap, and price.
  *
  * @param symbol       stock symbol
- * @param name         stock name
+ * @param companyName  stock companyName
  * @param marketCap    market capitalization
  * @param price        stock price
  * @param currencyCode stock currency code e.g. "USD", "EUR", "CHF"
@@ -15,7 +15,7 @@ import java.util.Arrays;
  */
 public record StockEntry(
         String symbol,
-        String name,
+        String companyName,
         long marketCap,
         double price,
         String currencyCode,

@@ -18,7 +18,7 @@ class StockEntryTest {
         // then
         assertThat(stockEntry).isNotNull();
         assertThat(stockEntry.symbol()).isEqualTo("NVDA");
-        assertThat(stockEntry.name()).isEqualTo("NVIDIA Corporation");
+        assertThat(stockEntry.companyName()).isEqualTo("NVIDIA Corporation");
         assertThat(stockEntry.marketCap()).isEqualTo(2180000000000L);
         assertThat(stockEntry.price()).isEqualTo(138.77);
         assertThat(stockEntry.currencyCode()).isEqualTo("USD");
@@ -38,7 +38,7 @@ class StockEntryTest {
         // then
         assertThat(stockEntry).isNotNull();
         assertThat(stockEntry.symbol()).isEqualTo("BMW");
-        assertThat(stockEntry.name()).isEqualTo("Bayerische Motoren Werke Aktiengesellschaft");
+        assertThat(stockEntry.companyName()).isEqualTo("Bayerische Motoren Werke Aktiengesellschaft");
         assertThat(stockEntry.marketCap()).isEqualTo(68300000000L);
         assertThat(stockEntry.price()).isEqualTo(102.44);
         assertThat(stockEntry.currencyCode()).isEqualTo("EUR");

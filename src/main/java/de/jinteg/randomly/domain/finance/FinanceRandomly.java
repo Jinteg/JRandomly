@@ -44,7 +44,7 @@ public final class FinanceRandomly {
     }
 
     /**
-     * Returns a random, consistent stock entry (symbol, name, market cap, price).
+     * Returns a random, consistent stock entry (symbol, companyName, market cap, price, currency code, ISIN, MIC).
      *
      * @return stock entry
      */
@@ -53,7 +53,7 @@ public final class FinanceRandomly {
     }
 
     /**
-     * Returns a random, consistent stock entry (symbol, name, market cap, price).
+     * Returns a random, consistent stock entry (symbol, companyName, market cap, price, currency code, ISIN, MIC).
      *
      * @param locale locale to use for catalog selection
      * @return stock entry

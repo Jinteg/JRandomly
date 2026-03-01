@@ -68,7 +68,7 @@ class FinanceRandomlyTest {
         // then
         assertThat(stockEntry).isNotNull();
         assertThat(stockEntry.symbol()).isIn(ALLOWED_US_SYMBOLS);
-        assertThat(stockEntry.name()).isNotBlank();
+        assertThat(stockEntry.companyName()).isNotBlank();
         assertThat(stockEntry.marketCap()).isPositive();
         assertThat(stockEntry.price()).isPositive();
         assertThat(stockEntry.currencyCode()).isEqualTo("USD");
@@ -85,7 +85,7 @@ class FinanceRandomlyTest {
         StockEntry stockEntry = r.finance().stock(Locale.GERMANY);
         assertThat(stockEntry).isNotNull();
         assertThat(stockEntry.symbol()).isIn(ALLOWED_DE_SYMBOLS);
-        assertThat(stockEntry.name()).isNotBlank();
+        assertThat(stockEntry.companyName()).isNotBlank();
         assertThat(stockEntry.marketCap()).isPositive();
         assertThat(stockEntry.price()).isPositive();
     }
@@ -99,7 +99,7 @@ class FinanceRandomlyTest {
         StockEntry stockEntry = r.finance().stock();
         assertThat(stockEntry).isNotNull();
         assertThat(stockEntry.symbol()).isIn(ALLOWED_DE_SYMBOLS);
-        assertThat(stockEntry.name()).isNotBlank();
+        assertThat(stockEntry.companyName()).isNotBlank();
         assertThat(stockEntry.marketCap()).isPositive();
         assertThat(stockEntry.price()).isPositive();
     }
