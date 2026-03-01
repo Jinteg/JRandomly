@@ -7,7 +7,7 @@
 
     <groupId>de.jinteg.jrandomly</groupId>
     <artifactId>jrandomly-testdata</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>JRandomly</name>
@@ -51,6 +51,9 @@
 
         <junit.jupiter.version>5.12.0</junit.jupiter.version>
         <assertj.version>3.27.7</assertj.version>
+
+        <!-- Default: no signing for local/internal development -->
+        <gpg.skip>true</gpg.skip>
     </properties>
 
     <dependencies>
@@ -70,17 +73,8 @@
         </dependency>
     </dependencies>
 
-    <!-- Deployment to OSSRH -->
-    <distributionManagement>
-        <repository>
-            <id>ossrh</id>
-            <url>https://central.sonatype.com/api/v1/publisher/deployments</url>
-        </repository>
-    </distributionManagement>
-
     <build>
         <plugins>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
@@ -125,6 +119,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>3.2.4</version>
+                <configuration>
+                    <skip>${gpg.skip}</skip>
+                </configuration>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
@@ -135,17 +132,35 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <groupId>org.sonatype.central</groupId>
-                <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.6.0</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <publishingServerId>ossrh</publishingServerId>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>release-central</id>
+            <properties>
+                <gpg.skip>false</gpg.skip>
+            </properties>
+            <distributionManagement>
+                <repository>
+                    <id>ossrh</id>
+                    <url>https://central.sonatype.com/api/v1/publisher/deployments</url>
+                </repository>
+            </distributionManagement>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.6.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>ossrh</publishingServerId>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
