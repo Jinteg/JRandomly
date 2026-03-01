@@ -170,6 +170,38 @@ public final class IdRandomly {
         return randomly.longBetween(1L, upperInclusive);
     }
 
+    /**
+     * Returns an alphanumeric key with exactly {@code length} characters.
+     * <p>
+     * Example: {@code key(12)} → {@code "a7Bx3kZ9Pq1R"}
+     *
+     * @param length key length (must be > 0)
+     * @return alphanumeric key with exact length
+     * @throws IllegalArgumentException if {@code length <= 0}
+     */
+    public String key(int length) {
+        if (length <= 0) {
+            throw new IllegalArgumentException("length must be > 0");
+        }
+        return randomly.text().prefixedAlphaNumeric("", length, length);
+    }
+
+    /**
+     * Returns a numeric key with exactly {@code length} characters.
+     * <p>
+     * Leading zeros are allowed.
+     * Example: {@code numericKey(6)} → {@code "004271"}
+     *
+     * @param length key length (must be > 0)
+     * @return numeric key with exact length
+     * @throws IllegalArgumentException if {@code length <= 0}
+     */
+    public String numericKey(int length) {
+        if (length <= 0) {
+            throw new IllegalArgumentException("length must be > 0");
+        }
+        return randomly.text().numericString(length);
+    }
     // ---- String IDs ----
 
     /**
@@ -180,7 +212,7 @@ public final class IdRandomly {
      * @param prefix      the prefix (e.g. "ORD-", "USR-")
      * @param totalLength total length of the resulting string (prefix + random part)
      * @return prefixed alphanumeric ID string
-     * @throws IllegalArgumentException if prefix is longer than totalLength
+     * @throws IllegalArgumentException if the prefix is longer than totalLength
      */
     public String prefixedId(String prefix, int totalLength) {
         return randomly.text().prefixedAlphaNumeric(prefix, totalLength, totalLength);

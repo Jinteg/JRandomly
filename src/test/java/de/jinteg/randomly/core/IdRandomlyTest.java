@@ -153,6 +153,38 @@ class IdRandomlyTest {
     }
 
     @Test
+    void key() {
+        String key = randomly.id().key(16);
+        Assertions.assertThat(key)
+                .hasSize(16)
+                .matches("^[A-Za-z0-9]+$");
+    }
+
+    @Test
+    void keyRejectsNonPositiveLength() {
+        assertThatThrownBy(() -> randomly.id().key(0))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> randomly.id().key(-1))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void numericKey() {
+        String key = randomly.id().numericKey(16);
+        Assertions.assertThat(key)
+                .hasSize(16)
+                .matches("^\\d+$");
+    }
+
+    @Test
+    void numericKeyRejectsNonPositiveLength() {
+        assertThatThrownBy(() -> randomly.id().numericKey(0))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> randomly.id().numericKey(-1))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void prefixedId() {
         String prefix = "PREFIX";
         String id = randomly.id().prefixedId(prefix, 10);
