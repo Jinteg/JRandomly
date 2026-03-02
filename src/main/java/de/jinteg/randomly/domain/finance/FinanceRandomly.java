@@ -44,28 +44,28 @@ public final class FinanceRandomly {
     }
 
     /**
-     * Returns a random, consistent stock entry (symbol, companyName, market cap, price, currency code, ISIN, MIC).
+     * Returns a random, consistent stock pick (symbol, companyName, market cap, price, currency code, ISIN, MIC).
      *
-     * @return stock entry
+     * @return stock pick
      */
-    public StockEntry stock() {
+    public StockPick stock() {
         return stock(randomly.getLocale());
     }
 
     /**
-     * Returns a random, consistent stock entry (symbol, companyName, market cap, price, currency code, ISIN, MIC).
+     * Returns a random, consistent stock pick (symbol, companyName, market cap, price, currency code, ISIN, MIC).
      *
      * @param locale locale to use for catalog selection
-     * @return stock entry
+     * @return picked stock
      */
-    public StockEntry stock(Locale locale) {
+    public StockPick stock(Locale locale) {
         Objects.requireNonNull(locale, "locale");
         List<String> entries = NumberedPropertiesCatalog.loadList(
                 "de/jinteg/randomly/catalog/finance/stocks",
                 locale
         );
         String raw = entries.get(randomly.index(entries.size()));
-        return StockEntry.parse(RawParserUtil.parse(raw, StockEntry.COLUMN_COUNT));
+        return StockPick.parse(RawParserUtil.parse(raw, StockPick.COLUMN_COUNT));
     }
 
     /**

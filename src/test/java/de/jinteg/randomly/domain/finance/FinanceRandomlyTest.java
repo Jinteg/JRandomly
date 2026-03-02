@@ -20,7 +20,7 @@ class FinanceRandomlyTest {
                         "de/jinteg/randomly/catalog/finance/stocks",
                         locale
                 ).stream()
-                .map(raw -> StockEntry.parse(RawParserUtil.parse(raw, StockEntry.COLUMN_COUNT)).symbol())
+                .map(raw -> StockPick.parse(RawParserUtil.parse(raw, StockPick.COLUMN_COUNT)).symbol())
                 .toList();
     }
 
@@ -62,17 +62,17 @@ class FinanceRandomlyTest {
         System.setProperty("jrandomly.locale", "de-DE");
 
         // when
-        JRandomly r = JRandomly.randomly("FinanceTest#stockEntry");
-        StockEntry stockEntry = r.finance().stock(Locale.US);
+        JRandomly r = JRandomly.randomly("FinanceTest#stockPick");
+        StockPick stockPick = r.finance().stock(Locale.US);
 
         // then
-        assertThat(stockEntry).isNotNull();
-        assertThat(stockEntry.symbol()).isIn(ALLOWED_US_SYMBOLS);
-        assertThat(stockEntry.companyName()).isNotBlank();
-        assertThat(stockEntry.marketCap()).isPositive();
-        assertThat(stockEntry.price()).isPositive();
-        assertThat(stockEntry.currencyCode()).isEqualTo("USD");
-        assertThat(stockEntry.mic()).isNotEmpty();
+        assertThat(stockPick).isNotNull();
+        assertThat(stockPick.symbol()).isIn(ALLOWED_US_SYMBOLS);
+        assertThat(stockPick.companyName()).isNotBlank();
+        assertThat(stockPick.marketCap()).isPositive();
+        assertThat(stockPick.price()).isPositive();
+        assertThat(stockPick.currencyCode()).isEqualTo("USD");
+        assertThat(stockPick.mic()).isNotEmpty();
     }
 
 
@@ -81,13 +81,13 @@ class FinanceRandomlyTest {
         System.setProperty("jrandomly.seed", "1");
         System.setProperty("jrandomly.locale", "de-DE");
 
-        JRandomly r = JRandomly.randomly("FinanceTest#stockEntryLocale");
-        StockEntry stockEntry = r.finance().stock(Locale.GERMANY);
-        assertThat(stockEntry).isNotNull();
-        assertThat(stockEntry.symbol()).isIn(ALLOWED_DE_SYMBOLS);
-        assertThat(stockEntry.companyName()).isNotBlank();
-        assertThat(stockEntry.marketCap()).isPositive();
-        assertThat(stockEntry.price()).isPositive();
+        JRandomly r = JRandomly.randomly("FinanceTest#stockPickLocale");
+        StockPick stockPick = r.finance().stock(Locale.GERMANY);
+        assertThat(stockPick).isNotNull();
+        assertThat(stockPick.symbol()).isIn(ALLOWED_DE_SYMBOLS);
+        assertThat(stockPick.companyName()).isNotBlank();
+        assertThat(stockPick.marketCap()).isPositive();
+        assertThat(stockPick.price()).isPositive();
     }
 
     @Test
@@ -95,20 +95,20 @@ class FinanceRandomlyTest {
         System.setProperty("jrandomly.seed", "1");
         System.setProperty("jrandomly.locale", "de-DE");
 
-        JRandomly r = JRandomly.randomly("FinanceTest#stockEntryWOLocale");
-        StockEntry stockEntry = r.finance().stock();
-        assertThat(stockEntry).isNotNull();
-        assertThat(stockEntry.symbol()).isIn(ALLOWED_DE_SYMBOLS);
-        assertThat(stockEntry.companyName()).isNotBlank();
-        assertThat(stockEntry.marketCap()).isPositive();
-        assertThat(stockEntry.price()).isPositive();
+        JRandomly r = JRandomly.randomly("FinanceTest#stockPickWOLocale");
+        StockPick stockPick = r.finance().stock();
+        assertThat(stockPick).isNotNull();
+        assertThat(stockPick.symbol()).isIn(ALLOWED_DE_SYMBOLS);
+        assertThat(stockPick.companyName()).isNotBlank();
+        assertThat(stockPick.marketCap()).isPositive();
+        assertThat(stockPick.price()).isPositive();
     }
 
     @Test
     void stock_withUnsupportedLocale() {
         System.setProperty("jrandomly.seed", "1");
 
-        JRandomly r = JRandomly.randomly("FinanceTest#stockEntryLocaleUnsupported");
+        JRandomly r = JRandomly.randomly("FinanceTest#stockPickLocaleUnsupported");
 
         assertThatThrownBy(() -> r.finance().stock(Locale.ITALY))
                 .isInstanceOf(IllegalStateException.class)
