@@ -12,6 +12,7 @@ import java.util.*;
 public final class FinanceRandomly {
     private final JRandomly randomly;
     private static final List<Currency> AVAILABLE_CURRENCIES = List.copyOf(Currency.getAvailableCurrencies());
+    private static final String CRYPTO_CATALOG = "de/jinteg/randomly/catalog/finance/crypto_assets";
 
 
     /**
@@ -50,6 +51,16 @@ public final class FinanceRandomly {
      */
     public StockPick stock() {
         return stock(randomly.getLocale());
+    }
+
+    /**
+     * Returns a random crypto asset entry quoted in the currency
+     * derived from the configured locale.
+     *
+     * @return crypto asset pick in locale-specific currency
+     */
+    public CryptoAssetPick cryptoAsset() {
+        return cryptoAsset(getLocaleCurrencyCode());
     }
 
     /**
@@ -133,6 +144,55 @@ public final class FinanceRandomly {
                 .filter(code -> !excluding.contains(code))
                 .toList();
         return randomly.elementOf(filtered);
+    }
+
+    /**
+     * Derives the ISO 4217 currency code from the configured locale.
+     *
+     * @return currency code (e.g. "EUR", "USD", "JPY")
+     */
+    private String getLocaleCurrencyCode() {
+        try {
+            return Currency.getInstance(randomly.getLocale()).getCurrencyCode();
+        } catch (IllegalArgumentException e) {
+            // Fallback for locales without country (e.g. "en", "de")
+            return "USD";
+        }
+    }
+
+    /**
+     * Returns a random crypto asset entry quoted in the given currency.
+     *
+     * @param quoteCurrencyCode ISO 4217 currency code (e.g. "EUR", "USD", "JPY")
+     * @return crypto asset entry with converted price and market cap
+     */
+    public CryptoAssetPick cryptoAsset(String quoteCurrencyCode) {
+        Objects.requireNonNull(quoteCurrencyCode, "quoteCurrencyCode");
+        List<String> entries = NumberedPropertiesCatalog.loadList(CRYPTO_CATALOG, Locale.ENGLISH);
+        String raw = entries.get(randomly.index(entries.size()));
+        return CryptoAssetParser.parse(
+                RawParserUtil.parse(raw, CryptoAssetParser.COLUMN_COUNT),
+                quoteCurrencyCode
+        );
+    }
+
+    /**
+     * Returns a crypto trading pair symbol (e.g. "BTC-USD", "ETH-EUR").
+     *
+     * @return pair symbol
+     */
+    public String cryptoPairSymbol() {
+        return cryptoAsset().pairSymbol();
+    }
+
+    /**
+     * Returns a crypto trading pair symbol in the given quote currency.
+     *
+     * @param quoteCurrencyCode quote currency
+     * @return pair symbol
+     */
+    public String cryptoPairSymbol(String quoteCurrencyCode) {
+        return cryptoAsset(quoteCurrencyCode).pairSymbol();
     }
 
 }

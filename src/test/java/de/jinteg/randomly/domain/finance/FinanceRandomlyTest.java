@@ -156,5 +156,82 @@ class FinanceRandomlyTest {
 
         assertThat(currency1).isNotNull().isNotEqualTo(currency2);
     }
+
+    @Test
+    void cryptoAsset_returns_valid_entry_in_usd() {
+        System.setProperty("jrandomly.seed", "1");
+        System.setProperty("jrandomly.locale", "us");
+
+        JRandomly r = JRandomly.randomly("FinanceTest#cryptoUsd");
+        CryptoAssetPick pick = r.finance().cryptoAsset();
+
+        assertThat(pick).isNotNull();
+        assertThat(pick.pairSymbol()).endsWith("-USD");
+        assertThat(pick.baseSymbol()).isNotBlank();
+        assertThat(pick.assetName()).isNotBlank();
+        assertThat(pick.price()).isPositive();
+        assertThat(pick.quoteCurrencyCode()).isEqualTo("USD");
+        assertThat(pick.marketCap()).isPositive();
+        assertThat(pick.network()).isNotBlank();
+    }
+
+    @Test
+    void cryptoAsset_converts_to_eur() {
+        System.setProperty("jrandomly.seed", "1");
+
+        JRandomly r = JRandomly.randomly("FinanceTest#cryptoEur");
+        CryptoAssetPick pick = r.finance().cryptoAsset("EUR");
+
+        assertThat(pick.pairSymbol()).endsWith("-EUR");
+        assertThat(pick.quoteCurrencyCode()).isEqualTo("EUR");
+        assertThat(pick.price()).isPositive();
+        assertThat(pick.marketCap()).isPositive();
+    }
+
+    @Test
+    void cryptoPairSymbol_returns_valid_pair() {
+        System.setProperty("jrandomly.seed", "1");
+
+        JRandomly r = JRandomly.randomly("FinanceTest#cryptoPair");
+        String pair = r.finance().cryptoPairSymbol("CHF");
+
+        assertThat(pair).isNotBlank().contains("-CHF");
+    }
+
+    @Test
+    void cryptoAsset_with_unsupported_currency_throws() {
+        System.setProperty("jrandomly.seed", "1");
+
+        JRandomly r = JRandomly.randomly("FinanceTest#cryptoFail");
+
+        assertThatThrownBy(() -> r.finance().cryptoAsset("XYZ"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("No test FX rate available");
+    }
+
+    @Test
+    void cryptoPairSymbol_with_different_currency() {
+        // Locale = de-DE → EUR
+        System.setProperty("jrandomly.locale", "de-DE");
+        JRandomly r = JRandomly.builder().withLocale(Locale.GERMANY).build();
+
+        String symbol = r.finance().cryptoPairSymbol();// → "ETH-EUR"
+        assertThat(symbol).endsWith("-EUR");
+
+        CryptoAssetPick eurPick = r.finance().cryptoAsset();// → BTC-EUR, price in EUR
+        assertThat(eurPick.pairSymbol()).endsWith("-EUR");
+        assertThat(eurPick.price()).isPositive();
+        assertThat(eurPick.quoteCurrencyCode()).isEqualTo("EUR");
+        assertThat(eurPick.marketCap()).isPositive();
+        assertThat(eurPick.network()).isNotBlank();
+
+        CryptoAssetPick usdPick = r.finance().cryptoAsset("USD");// → BTC-EUR, price in EUR
+        assertThat(usdPick.pairSymbol()).endsWith("-USD");
+        assertThat(eurPick.quoteCurrencyCode()).isEqualTo("EUR");
+
+        CryptoAssetPick jpyPick = r.finance().cryptoAsset("JPY");// → BTC-JPY, price in JPY
+        assertThat(jpyPick.pairSymbol()).endsWith("-JPY");
+
+    }
 }
 
