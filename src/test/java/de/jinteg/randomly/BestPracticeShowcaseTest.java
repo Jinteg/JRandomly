@@ -9,6 +9,10 @@ import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Showcase for recommended and deterministic JRandomly usage patterns.
+ * These examples are intended to remain stable and CI-friendly.
+ */
 @DisplayName("Best Practice Showcase")
 class BestPracticeShowcaseTest {
 

@@ -2,6 +2,7 @@ package de.jinteg.randomly;
 
 import de.jinteg.randomly.maybe.Maybe;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,15 +24,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Disabled("Manual playground - enable locally for interactive exploration")
 class ManualUsagePlaygroundTest {
 
-    @Test
-    @DisplayName("Manual Playground - Default configuration")
-    void showcasePrimaryNotScoped() {
+    @AfterEach
+    void cleanupSystemProperties() {
         System.clearProperty("jrandomly.seed");
         System.clearProperty("jrandomly.runStartTime");
         System.clearProperty("jrandomly.locale");
         System.clearProperty("jrandomly.maybeRate");
+    }
 
-
+    @Test
+    @DisplayName("Manual Playground - Default configuration")
+    void showcasePrimaryNotScoped() {
         JRandomly r = JRandomly.randomly();
         String replayInfo = r.replayInfo();
         System.out.println("JRandomly replayInfo=" + replayInfo);
@@ -86,8 +89,8 @@ class ManualUsagePlaygroundTest {
     }
 
     @Test
-    @DisplayName("Manual Playground - Maybe API - Strings")
-    void showCaseMaybeString() {
+    @DisplayName("Manual Playground - Maybe API - Supplier and direct string values")
+    void showcaseMaybeString() {
         JRandomly r = JRandomly.randomly("Showcase#2");
 
         String replayInfo = r.replayInfo();
@@ -102,27 +105,29 @@ class ManualUsagePlaygroundTest {
         System.out.println("maybe().text(...).orEmpty()=" + orEmpty);
         assertThat(orEmpty.isEmpty() || orEmpty.startsWith("X")).isTrue();
 
-        // String-Creation with maybe() and supplier
+        // String creation with maybe() and supplier
         String orNull = r.maybe().text(() -> r.text().prefixedAlphaNumeric("X", 0, 10)).orNull();
-        System.out.println("orEmpty(x)=" + orNull);
+        System.out.println("maybe().text(...).orNull()=" + orNull);
 
         Optional<String> optionalText = r.maybe().value(() -> r.text().prefixedAlphaNumeric("X", 0, 10)).optional();
-        System.out.println("Optional<String>(x)=" + optionalText);
+        System.out.println("maybe().value(...).optional()=" + optionalText);
 
         String orElse = r.maybe().value(() -> r.text().prefixedAlphaNumeric("X", 0, 10)).orElse("Cool By Default");
-        System.out.println("Optional<String>(x)=" + orElse);
+        System.out.println("maybe().value(...).orElse(...)=" + orElse);
 
         String orNull2 = r.maybe().text(r.text().prefixedAlphaNumeric("X", 0, 10)).orNull();
-        System.out.println("orEmpty(x)=" + orNull2);
+        System.out.println("maybe().text(value).orNull()=" + orNull2);
+
         Optional<String> optionalText2 = r.maybe().value(r.text().prefixedAlphaNumeric("X", 0, 10)).optional();
-        System.out.println("Optional<String>(x)=" + optionalText2);
+        System.out.println("maybe().value(value).optional()=" + optionalText2);
+
         String orElse2 = r.maybe().value(r.text().prefixedAlphaNumeric("X", 0, 10)).orElse("Cool By Default");
-        System.out.println("Optional<String>(x)=" + orElse2);
+        System.out.println("maybe().value(value).orElse(...)=" + orElse2);
     }
 
     @Test
-    @DisplayName("Manual Playground - Maybe API")
-    void showCaseWithMaybeStringInFluentStyle() {
+    @DisplayName("Manual Playground - Maybe API - Fluent string style")
+    void showcaseWithMaybeStringInFluentStyle() {
         JRandomly r = JRandomly.randomly("Showcase#2");
 
         System.out.println("--- Testing Maybe String Cases ---");
@@ -132,33 +137,33 @@ class ManualUsagePlaygroundTest {
         Assertions.assertThat(orEmpty.isEmpty() || orEmpty.startsWith("X")).isTrue();
 
         String orNull = r.maybeText(r.text().prefixedAlphaNumeric("X", 0, 10)).orNull();
-        System.out.println("orNull(x)=" + orNull);
+        System.out.println("maybeText(...).orNull()=" + orNull);
 
         Optional<String> optionalText = r.maybeOf(r.text().prefixedAlphaNumeric("X", 0, 10)).optional();
-        System.out.println("Optional<String>(x)=" + optionalText);
+        System.out.println("maybeOf(...).optional()=" + optionalText);
 
         String orElse = r.maybeOf(r.text().prefixedAlphaNumeric("X", 0, 10)).orElse("Cool By Default");
-        System.out.println("orElse(x)=" + orElse);
+        System.out.println("maybeOf(...).orElse(...)=" + orElse);
 
         Maybe<String> maybeOfNullable = r.maybeOfNullable(r.text().prefixedAlphaNumeric("X", 0, 10));
-        System.out.println("maybeOfNullable(x)=" + maybeOfNullable);
+        System.out.println("maybeOfNullable(...)=" + maybeOfNullable);
     }
 
     @Test
     @DisplayName("Manual Playground - Fluent maybe API - Enums")
-    void showCaseWithMaybeInFluentStyle() {
+    void showcaseWithMaybeInFluentStyle() {
         JRandomly r = JRandomly.randomly("Showcase#2");
         Assertions.assertThat(r.replayInfo()).contains("-Djrandomly.seed=");
-        System.out.println("--- Testing Maybe String Cases ---");
+        System.out.println("--- Testing Maybe Enum Cases ---");
 
         Optional<CarBrand> optional = r.maybeOf(r.enumOf(CarBrand.class)).optional();
-        System.out.println("Optional<String>(x)=" + optional);
+        System.out.println("Optional<CarBrand>=" + optional);
 
         CarBrand orNull1 = r.maybeOf(r.enumOf(CarBrand.class)).orNull();
-        System.out.println("Optional<String>(x)=" + orNull1);
+        System.out.println("orNull()=" + orNull1);
 
         CarBrand orElse = r.maybeOf(r.enumOf(CarBrand.class)).orElse(CarBrand.BMW);
-        System.out.println("orElse(x)=" + orElse);
+        System.out.println("orElse(BMW)=" + orElse);
     }
 
     @Test
