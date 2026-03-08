@@ -2,6 +2,7 @@ package de.jinteg.randomly;
 
 import de.jinteg.randomly.maybe.Maybe;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -13,25 +14,32 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Showcase of various features of JRandomly.
- * This is not a real test, but rather a playground for interactive exploration of the API and its features.
+ * Manual playground for exploring JRandomly usage patterns and behavior.
+ * This class is not part of the regular automated regression suite.
  * <p>
- * You can run this test repeatedly to explore the API. Recognize how it behaves if you change the seed or locale and runStart Time
+ * Enable and run locally when you want to try ideas, inspect replay info,
+ * or explore implementation details interactively.
  */
-//@Disabled("Manual showcase – enable locally for interactive exploration")
-class ManualShowcaseTest {
+@Disabled("Manual playground - enable locally for interactive exploration")
+class ManualUsagePlaygroundTest {
 
     @Test
-    @DisplayName("Showcase - Default without ")
+    @DisplayName("Manual Playground - Default configuration")
     void showcasePrimaryNotScoped() {
+        System.clearProperty("jrandomly.seed");
+        System.clearProperty("jrandomly.runStartTime");
+        System.clearProperty("jrandomly.locale");
+        System.clearProperty("jrandomly.maybeRate");
+
+
         JRandomly r = JRandomly.randomly();
-        assertThat(r.getLocale()).isEqualTo(Locale.getDefault());
         String replayInfo = r.replayInfo();
         System.out.println("JRandomly replayInfo=" + replayInfo);
+        assertThat(r.getLocale()).isEqualTo(Locale.getDefault());
     }
 
     @Test
-    @DisplayName("Showcase - Manual test ")
+    @DisplayName("Manual Playground - Primary types")
     void showcasePrimaryTypes() {
         System.setProperty("jrandomly.seed", "123456");
         System.setProperty("jrandomly.runStartTime", "2026-02-07T13:30:56+01:00");
@@ -67,7 +75,7 @@ class ManualShowcaseTest {
         System.out.println("finance.stockSymbol(DE)=" + r.finance().stockSymbol());
         System.out.println("finance.stockSymbol(US)=" + r.finance().stockSymbol(Locale.US));
 
-        // Enums and Collections are supported as well, but not all methods aren't implemented yet.
+        // Enums and collections are supported as well.
         System.out.println("enumValue(CarBrand)=" + r.enumOf(CarBrand.class));
 
         List<String> coll = new ArrayList<>();
@@ -78,7 +86,7 @@ class ManualShowcaseTest {
     }
 
     @Test
-    @DisplayName("Showcase - Manual test with Maybe Strings ")
+    @DisplayName("Manual Playground - Maybe API - Strings")
     void showCaseMaybeString() {
         JRandomly r = JRandomly.randomly("Showcase#2");
 
@@ -113,7 +121,7 @@ class ManualShowcaseTest {
     }
 
     @Test
-    @DisplayName("Showcase - Manual test with Maybe Strings ")
+    @DisplayName("Manual Playground - Maybe API")
     void showCaseWithMaybeStringInFluentStyle() {
         JRandomly r = JRandomly.randomly("Showcase#2");
 
@@ -137,7 +145,7 @@ class ManualShowcaseTest {
     }
 
     @Test
-    @DisplayName("Showcase - Manual test with Maybe Strings ")
+    @DisplayName("Manual Playground - Fluent maybe API - Enums")
     void showCaseWithMaybeInFluentStyle() {
         JRandomly r = JRandomly.randomly("Showcase#2");
         Assertions.assertThat(r.replayInfo()).contains("-Djrandomly.seed=");
@@ -154,7 +162,7 @@ class ManualShowcaseTest {
     }
 
     @Test
-    @DisplayName("Showcase - Replay: run with externally set seed + runStartTime (deterministic)")
+    @DisplayName("Manual Playground - Replay with external seed")
     void showcaseReplay_withExternalSeed() {
         // Simulate: user copied replayInfo from a previous failing run
         System.setProperty("jrandomly.seed", "123456");
@@ -173,14 +181,14 @@ class ManualShowcaseTest {
         System.out.println("localTime()=" + r.dateTime().localTime());
         System.out.println("stockSymbol(DE)=" + r.finance().stockSymbol());
 
-        // Run this test twice: the output must be IDENTICAL because seed + runStartTime are fixed.
+        // Run this test twice: the output must be identical because seed + runStartTime are fixed.
     }
 
     @Test
-    @DisplayName("Showcase - Fresh run: no seed set (non-deterministic, observe replayInfo)")
+    @DisplayName("Manual Playground - Fresh run without external seed")
     void showcaseFreshRun_withoutSeed() {
-        // No seed set → each run produces different values,
-        // But replayInfo tells you what to set for reproduction!
+        // No seed set -> each run produces different values,
+        // but replayInfo tells you what to set for reproduction!
         System.clearProperty("jrandomly.seed");
         System.clearProperty("jrandomly.runStartTime");
         System.clearProperty("jrandomly.locale");
@@ -197,7 +205,7 @@ class ManualShowcaseTest {
         System.out.println("localTime()=" + r.dateTime().localTime());
         System.out.println("stockSymbol(DE)=" + r.finance().stockSymbol());
 
-        // Run this test twice: the output will DIFFER.
+        // Run this test twice: the output will differ.
         // But if you take the replayInfo and set it as -D flags, it becomes deterministic.
     }
 
