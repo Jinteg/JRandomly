@@ -24,7 +24,7 @@ Reproducible, random and locale-aware test data generator for Java 21+.
 <dependency>
     <groupId>de.jinteg.jrandomly</groupId>
     <artifactId>jrandomly-testdata</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <scope>test</scope>
 </dependency>
 ```
