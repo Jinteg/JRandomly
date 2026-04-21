@@ -24,6 +24,7 @@ class ManualShowcaseTest {
     @Test
     @DisplayName("Showcase - Default without ")
     void showcasePrimaryNotScoped() {
+      System.setProperty("jrandomly.locale", "de-DE");
         JRandomly r = JRandomly.randomly();
         assertThat(r.getLocale()).isEqualTo(Locale.getDefault());
         String replayInfo = r.replayInfo();
