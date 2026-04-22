@@ -12,6 +12,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,7 +51,7 @@ import static org.assertj.core.api.Assertions.fail;
  *   <li>Within each logical business group, business ids must be unique, gap-free,
  *       and start with {@code 1}.</li>
  *   <li>Additional fields for a business id are allowed, but they must reference an
- *       existing business id of the same group.</li>
+ *       existing base business entry of the same group.</li>
  * </ul>
  *
  * <p>Valid examples:
@@ -76,7 +78,7 @@ import static org.assertj.core.api.Assertions.fail;
  * person.en.1=...
  * person.en.3=...                  // gap in business ids
  *
- * person.en.22.address=...         // no business entry for id 22
+ * person.en.22.address=...         // no base business entry for id 22
  *
  * person.en.2=
  *
@@ -112,24 +114,49 @@ class CatalogIntegrityTest {
 
   private static void assertNumberedCatalogIntegrity(Path propertyFile) throws IOException {
     List<String> lines = Files.readAllLines(propertyFile, StandardCharsets.UTF_8);
+    LinkedHashMap<String, EntryInfo> entriesByKey = parseEntries(propertyFile, lines);
+
+    assertThat(entriesByKey)
+        .as("Catalog file must contain at least one property entry: %s", propertyFile)
+        .isNotEmpty();
+
+    List<EntryInfo> entries = new ArrayList<>(entriesByKey.values());
+    List<EntryInfo> businessEntries = entries.stream()
+        .filter(entry -> entry.number() > 0)
+        .toList();
+
+    assertThat(businessEntries)
+        .as("Catalog file must contain at least one business entry with id > 0: %s", propertyFile)
+        .isNotEmpty();
+
+    Map<String, List<EntryInfo>> entriesByBusinessGroup = groupBusinessEntries(businessEntries);
+    assertBusinessGroups(propertyFile, entriesByBusinessGroup);
+  }
+
+  private static LinkedHashMap<String, EntryInfo> parseEntries(
+      Path propertyFile,
+      List<String> lines
+  ) {
     LinkedHashMap<String, EntryInfo> entriesByKey = new LinkedHashMap<>();
 
     for (int index = 0; index < lines.size(); index++) {
       String originalLine = lines.get(index);
-      String line = stripUtf8Bom(originalLine).trim();
+      String normalizedLine = normalizeLine(originalLine, index);
 
-      if (line.isEmpty() || line.startsWith("#") || line.startsWith("!")) {
+      if (normalizedLine.isEmpty()
+          || normalizedLine.startsWith("#")
+          || normalizedLine.startsWith("!")) {
         continue;
       }
 
-      int separatorIndex = findSeparatorIndex(line);
+      int separatorIndex = findSeparatorIndex(normalizedLine);
       assertThat(separatorIndex)
           .as("Missing key-value separator in %s at line %s: %s",
               propertyFile, index + 1, originalLine)
           .isGreaterThan(0);
 
-      String key = line.substring(0, separatorIndex).trim();
-      String value = line.substring(separatorIndex + 1).trim();
+      String key = normalizedLine.substring(0, separatorIndex).trim();
+      String value = normalizedLine.substring(separatorIndex + 1).trim();
 
       assertThat(value)
           .as("Property value in %s at line %s must not be empty",
@@ -151,24 +178,18 @@ class CatalogIntegrityTest {
       int number = Integer.parseInt(matcher.group("number"));
       String suffix = matcher.group("suffix");
 
-      entriesByKey.put(key, new EntryInfo(key, value, prefix, number, suffix, index + 1));
+      entriesByKey.put(
+          key,
+          new EntryInfo(key, value, prefix, number, suffix, index + 1)
+      );
     }
 
-    assertThat(entriesByKey)
-        .as("Catalog file must contain at least one property entry: %s", propertyFile)
-        .isNotEmpty();
+    return entriesByKey;
+  }
 
-    List<EntryInfo> entries = new ArrayList<>(entriesByKey.values());
-
-    List<EntryInfo> businessEntries = entries.stream()
-        .filter(entry -> entry.number() > 0)
-        .toList();
-
-    assertThat(businessEntries)
-        .as("Catalog file must contain at least one business entry with id > 0: %s", propertyFile)
-        .isNotEmpty();
-
+  private static Map<String, List<EntryInfo>> groupBusinessEntries(List<EntryInfo> businessEntries) {
     Map<String, List<EntryInfo>> entriesByBusinessGroup = new LinkedHashMap<>();
+
     for (EntryInfo entry : businessEntries) {
       String businessGroup = determineBusinessGroup(entry);
       entriesByBusinessGroup
@@ -176,47 +197,79 @@ class CatalogIntegrityTest {
           .add(entry);
     }
 
+    return entriesByBusinessGroup;
+  }
+
+  private static void assertBusinessGroups(
+      Path propertyFile,
+      Map<String, List<EntryInfo>> entriesByBusinessGroup
+  ) {
     for (Map.Entry<String, List<EntryInfo>> groupEntry : entriesByBusinessGroup.entrySet()) {
       String businessGroup = groupEntry.getKey();
       List<EntryInfo> groupEntries = groupEntry.getValue();
 
-      List<Integer> businessIds = groupEntries.stream()
-          .map(EntryInfo::number)
-          .distinct()
-          .sorted()
-          .toList();
+      assertGapFreeBusinessIds(propertyFile, businessGroup, groupEntries);
+      assertAdditionalFieldsReferenceExistingBaseEntry(propertyFile, businessGroup, groupEntries);
+      assertNoDuplicateVariants(propertyFile, businessGroup, groupEntries);
+    }
+  }
 
-      List<Integer> expectedSequence = java.util.stream.IntStream.rangeClosed(1, businessIds.size())
-          .boxed()
-          .toList();
+  private static void assertGapFreeBusinessIds(
+      Path propertyFile,
+      String businessGroup,
+      List<EntryInfo> groupEntries
+  ) {
+    List<Integer> businessIds = groupEntries.stream()
+        .map(EntryInfo::number)
+        .distinct()
+        .sorted()
+        .toList();
 
-      assertThat(businessIds)
-          .as("Business ids for group %s in %s must be gap-free and start with 1",
-              businessGroup, propertyFile)
-          .containsExactlyElementsOf(expectedSequence);
+    List<Integer> expectedSequence = IntStream.rangeClosed(1, businessIds.size())
+        .boxed()
+        .toList();
 
-      Set<Integer> baseEntryIds = groupEntries.stream()
-          .filter(entry -> entry.suffix().isEmpty())
-          .map(EntryInfo::number)
-          .collect(java.util.stream.Collectors.toSet());
+    assertThat(businessIds)
+        .as("Business ids for group %s in %s must be gap-free and start with 1",
+            businessGroup, propertyFile)
+        .containsExactlyElementsOf(expectedSequence);
+  }
 
-      for (EntryInfo entry : groupEntries) {
-        if (!entry.suffix().isEmpty()) {
-          assertThat(baseEntryIds)
-              .as("Additional field entry in group %s at line %s in %s requires a base entry without suffix for id %s: %s",
-                  businessGroup, entry.lineNumber(), propertyFile, entry.number(), entry.key())
-              .contains(entry.number());
-        }
+  private static void assertAdditionalFieldsReferenceExistingBaseEntry(
+      Path propertyFile,
+      String businessGroup,
+      List<EntryInfo> groupEntries
+  ) {
+    Set<Integer> baseEntryIds = groupEntries.stream()
+        .filter(EntryInfo::isBaseEntry)
+        .map(EntryInfo::number)
+        .collect(Collectors.toSet());
+
+    for (EntryInfo entry : groupEntries) {
+      if (!entry.isBaseEntry()) {
+        assertThat(baseEntryIds)
+            .as("Additional field entry in group %s at line %s in %s requires a base entry "
+                    + "without suffix for id %s: %s",
+                businessGroup, entry.lineNumber(), propertyFile, entry.number(), entry.key())
+            .contains(entry.number());
       }
+    }
+  }
 
-      LinkedHashSet<String> variants = new LinkedHashSet<>();
-      for (EntryInfo entry : groupEntries) {
-        String variantKey = entry.number() + "|" + entry.prefix() + "|" + entry.suffix();
-        assertThat(variants.add(variantKey))
-            .as("Duplicate numbered variant in business group %s at line %s in %s: %s",
-                businessGroup, entry.lineNumber(), propertyFile, entry.key())
-            .isTrue();
-      }
+  private static void assertNoDuplicateVariants(
+      Path propertyFile,
+      String businessGroup,
+      List<EntryInfo> groupEntries
+  ) {
+    LinkedHashSet<String> variants = new LinkedHashSet<>();
+
+    for (EntryInfo entry : groupEntries) {
+      String variantKey = entry.number() + "|" + entry.prefix() + "|" + entry.suffix();
+
+      assertThat(variants.add(variantKey))
+          .as("Duplicate numbered variant in business group %s at line %s in %s: %s",
+              businessGroup, entry.lineNumber(), propertyFile, entry.key())
+          .isTrue();
     }
   }
 
@@ -243,11 +296,16 @@ class CatalogIntegrityTest {
   private static String determineBusinessGroup(EntryInfo entry) {
     String[] segments = entry.prefix().split("\\.");
 
-    if (segments.length >= 3) {
-      return String.join(".", java.util.Arrays.copyOf(segments, segments.length - 1));
+    if (segments.length < 3) {
+      return entry.prefix();
     }
 
-    return entry.prefix();
+    return String.join(".", java.util.Arrays.copyOf(segments, segments.length - 1));
+  }
+
+  private static String normalizeLine(String originalLine, int index) {
+    String line = index == 0 ? stripUtf8Bom(originalLine) : originalLine;
+    return line.trim();
   }
 
   private static int findSeparatorIndex(String line) {
@@ -271,7 +329,8 @@ class CatalogIntegrityTest {
   }
 
   @Test
-  void all_catalog_properties_files_are_valid_utf8_and_well_formed_numbered_catalogs() throws IOException {
+  void all_catalog_properties_files_are_valid_utf8_and_well_formed_numbered_catalogs()
+      throws IOException {
     assertThat(CATALOG_ROOT)
         .exists()
         .isDirectory();
@@ -304,5 +363,9 @@ class CatalogIntegrityTest {
       String suffix,
       int lineNumber
   ) {
+
+    private boolean isBaseEntry() {
+      return suffix.isEmpty();
+    }
   }
 }
