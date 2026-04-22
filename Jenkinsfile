@@ -59,7 +59,7 @@ pipeline {
                         checkStyle(pattern: '**/target/checkstyle-result.xml')
                     ]
 
-                    // HTML Reports (falls vorhanden)
+                    // HTML Reports (if exists)
                     publishHTML(target: [
                         allowMissing: true,
                         alwaysLinkToLastBuild: true,
