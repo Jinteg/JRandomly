@@ -5,6 +5,7 @@ import de.jinteg.randomly.core.DateTimeRandomly;
 import de.jinteg.randomly.core.IdRandomly;
 import de.jinteg.randomly.core.TextRandomly;
 import de.jinteg.randomly.domain.finance.FinanceRandomly;
+import de.jinteg.randomly.domain.person.PersonRandomly;
 import de.jinteg.randomly.internal.*;
 import de.jinteg.randomly.maybe.Maybe;
 import de.jinteg.randomly.maybe.MaybeContext;
@@ -250,6 +251,15 @@ public final class JRandomly {
     public FinanceRandomly finance() {
         return new FinanceRandomly(this);
     }
+
+  /**
+   * Returns a PersonRandomly instance for generating person-related values.
+   *
+   * @return PersonRandomly instance
+   */
+  public PersonRandomly person() {
+    return new PersonRandomly(this);
+  }
 
     // --- Core utilities ---
 
@@ -640,6 +650,7 @@ public final class JRandomly {
      * @param count    number of distinct constants to return
      *                 Returns {@code count} distinct random enum constants.
      * @throws IllegalArgumentException if the count exceeds the number of constants
+     * @return list of selected enum constants
      */
     public <E extends Enum<E>> List<E> enumsOf(Class<E> enumType, int count) {
         return elementsOf(List.of(enumType.getEnumConstants()), count);
