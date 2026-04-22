@@ -61,7 +61,10 @@ public final class ReplayFileWriter {
     private static synchronized void ensureInitialized(String initialCaller) throws IOException {
         if (!initialized) {
             // Create parent directories if needed (e.g., fresh checkout without target/)
-            Files.createDirectories(REPLAY_FILE.getParent());
+          Path parent = REPLAY_FILE.getParent();
+          if (parent != null && Files.notExists(parent)) {
+            Files.createDirectories(parent);
+          }
 
             // Truncate: write header as first content
             String header = createReplayHeader(initialCaller);
