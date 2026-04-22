@@ -1,5 +1,6 @@
 package de.jinteg.randomly.internal;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -9,9 +10,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ConfigLoaderTest {
+  private static Locale defaultLocale;
+
+  @BeforeAll
+  static void setUp() {
+    System.clearProperty("jrandomly.locale");
+    defaultLocale = Locale.getDefault();
+  }
+
     @Test
     @DisplayName("should load default values")
     void shouldLoadDefaultValues() {
+      System.clearProperty("jrandomly.locale");
         System.setProperty("jrandomly.maybeRate", "0.125");
 
         ConfigLoader configLoader = new ConfigLoader();
@@ -19,7 +29,7 @@ class ConfigLoaderTest {
 
         assertThat(config).isNotNull();
         assertThat(config.rootSeed()).isEmpty();
-        assertThat(config.locale()).isEqualTo(Locale.getDefault());
+      assertThat(config.locale()).isEqualTo(defaultLocale);
         assertThat(config.maybeRate()).isEqualTo(0.125);
     }
 
