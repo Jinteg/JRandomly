@@ -1,4 +1,4 @@
-# ADR-0007: Support deterministic catalog entry selection by id
+# ADR-0007: Support deterministic lookup for catalog-backed domain APIs
 
 ## Status
 
@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-JRandomly provides multiple domain APIs backed by numbered catalog property files,
+JRandomly provides multiple domain APIs backed by catalog property files,
 for example for finance, person, and future company data.
 
 Today, catalog-backed APIs primarily expose random selection methods, such as:
@@ -16,15 +16,18 @@ Today, catalog-backed APIs primarily expose random selection methods, such as:
 - `randomly.person().data()`
 
 These methods are convenient for generated example data, but some use cases require
-direct access to a specific catalog entry:
+direct access to a specific catalog-backed entry:
 
 - deterministic test setup without relying on seed internals
 - stable examples for documentation and demos
-- targeted business scenarios using a known catalog entry
-- reproducing issues with a specific dataset
+- targeted business scenarios using a known dataset
+- reproducing issues with a specific entry
 
-The catalog files already use numbered entries, so the data model naturally supports
-direct lookup by entry id.
+Some catalogs are naturally addressed by numbered entries, while others are better
+addressed by stable domain keys such as symbol, code, username, or VAT id.
+
+A single mandatory lookup style based only on numbered ids would not fit all domains
+equally well.
 
 ## Decision
 
@@ -33,59 +36,63 @@ For catalog-backed domain APIs, we support two access patterns:
 1. **Random selection**
     - Existing parameterless methods continue to return a random entry from the
       locale-specific catalog.
-2. **Deterministic selection by id**
-    - Additional methods with the suffix `ById(int entryId)` return the exact
-      numbered catalog entry from the locale-specific catalog.
+2. **Deterministic lookup**
+    - Additional explicit lookup methods return a specific catalog-backed entry by
+      a stable selector appropriate for the domain.
 
 Examples:
 
 - `randomly.finance().stock()`
-- `randomly.finance().stockById(5)`
+- `randomly.finance().stockBySymbol("AAPL")`
 - `randomly.finance().cryptoAsset()`
-- `randomly.finance().cryptoAssetById(3)`
+- `randomly.finance().cryptoAssetBySymbol("BTC")`
 - `randomly.person().data()`
 - `randomly.person().personById(7)`
 
 The following rules apply:
 
-- `entryId` is **1-based**
-- `entryId` maps directly to the numbered catalog entry
-- `ById(...)` methods are **not random** and must not depend on RNG state
-- the active locale still determines which catalog is used
-- invalid ids must fail fast with `IllegalArgumentException`
+- random methods remain parameterless
+- deterministic lookup methods must use an explicit selector in the method name
+- the selector must be stable and appropriate for the domain
+- lookup methods are **not random** and must not depend on RNG state
+- the active locale still determines which catalog is used where applicable
+- invalid selectors must fail fast with `IllegalArgumentException`
 
-Example error message:
+Example error messages:
 
-`Catalog entry id 999 not found for stocks and locale de`
+- `Catalog entry id 999 not found for persons and locale de`
+- `Stock symbol AAPL not found for locale de`
+- `Crypto asset symbol BTC not found`
 
 ## Consequences
 
 ### Positive
 
-- API consumers can explicitly request stable catalog entries
+- API consumers can explicitly request stable catalog-backed entries
 - test setup becomes easier and more readable
 - examples and demos can use fixed domain data without relying on seed behavior
-- the convention scales across catalog-backed domains
+- the convention scales across different domains with different natural identifiers
 - the distinction between random generation and deterministic lookup is explicit
 
 ### Negative
 
-- numbered catalog entries become a more visible part of the public API behavior
-- changing catalog numbering may affect consumers that rely on specific ids
-- each domain API needs an additional lookup method and validation logic
+- public APIs become slightly more domain-specific
+- each domain API needs selector-specific lookup logic and validation
+- selector stability must be maintained in catalog data
 
 ## Naming
 
-The deterministic lookup method naming convention is:
-
-`<entity>ById(int entryId)`
+Deterministic lookup methods must use explicit selector-based names.
 
 Examples:
 
-- `stockById(int entryId)`
-- `cryptoAssetById(int entryId)`
+- `stockBySymbol(String symbol)`
+- `cryptoAssetBySymbol(String symbol)`
 - `personById(int entryId)`
-- `companyById(int entryId)`
+- `companyByVatId(String vatId)`
+- `genderByCode(String code)`
+
+The selector should reflect the most natural stable key of the domain.
 
 For the person domain, the existing random method remains `data()` for readability
 and backward compatibility. The deterministic lookup method is added as
@@ -94,19 +101,18 @@ an awkward API shape such as `randomly.person().person()`.
 
 ## Implementation notes
 
-Implementation should reuse the same locale-specific catalog sources as the random
-methods.
+Implementation should reuse the same catalog sources as the random methods.
 
-`ById(...)` methods should:
+Deterministic lookup methods should:
 
-- validate that `entryId > 0`
-- resolve the locale-specific catalog
-- load the numbered entry with the exact matching id
-- throw `IllegalArgumentException` if no such entry exists
-- parse the entry using the same parser as the random method
+- validate the selector input
+- resolve the locale-specific catalog where applicable
+- locate the matching entry by the configured selector
+- throw `IllegalArgumentException` if no matching entry exists
+- parse the entry using the same parser as the corresponding random method
 
 The catalog integrity test remains responsible for validating numbered catalog
-structure, uniqueness, and gap-free sequences.
+structure, uniqueness, and gap-free sequences where numbering is used.
 
 ## Alternatives considered
 
@@ -115,13 +121,14 @@ structure, uniqueness, and gap-free sequences.
 Rejected because the method name is too implicit. It is less clear whether the
 integer represents an id, an index, a count, or another parameter.
 
-### Use domain-neutral names such as `dataById(int entryId)`
+### Require `ById(int entryId)` for all catalog-backed domains
 
-Rejected because entity-specific names are clearer in public APIs and scale better
-across multiple domains.
+Rejected because not all domains have a natural, stable, global numeric identifier.
+Some domains are better addressed by stable business keys such as stock symbols,
+crypto asset symbols, or codes.
 
 ### Keep only random access and rely on seed determinism
 
 Rejected because seeds are useful for reproducibility of random streams, but they
-are less explicit and less convenient than direct catalog entry lookup for targeted
+are less explicit and less convenient than direct deterministic lookup for targeted
 use cases.
