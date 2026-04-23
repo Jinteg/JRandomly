@@ -1,6 +1,7 @@
 package de.jinteg.randomly.domain.person;
 
 import de.jinteg.randomly.JRandomly;
+import de.jinteg.randomly.internal.catalog.NumberedCatalogLookup;
 import de.jinteg.randomly.internal.catalog.NumberedPropertiesCatalog;
 import de.jinteg.randomly.internal.catalog.RawParserUtil;
 
@@ -45,6 +46,35 @@ public final class PersonRandomly {
     Objects.requireNonNull(locale, "locale");
     List<String> entries = NumberedPropertiesCatalog.loadList(PERSON_CATALOG_PATH, locale);
     String raw = entries.get(randomly.index(entries.size()));
+    return PersonParser.parse(RawParserUtil.parse(raw, PersonParser.COLUMN_COUNT));
+  }
+
+  /**
+   * Returns the exact person entry for the given catalog entry id using the configured locale.
+   *
+   * @param entryId 1-based catalog entry id
+   * @return person data
+   */
+  public PersonPick personById(int entryId) {
+    return personById(entryId, randomly.getLocale());
+  }
+
+  /**
+   * Returns the exact person entry for the given catalog entry id and locale.
+   *
+   * @param entryId 1-based catalog entry id
+   * @param locale  locale used for catalog selection
+   * @return person data
+   */
+  public PersonPick personById(int entryId, Locale locale) {
+    Objects.requireNonNull(locale, "locale");
+
+    String raw = NumberedCatalogLookup.entryById(
+        PERSON_CATALOG_PATH,
+        locale,
+        entryId,
+        "persons"
+    );
     return PersonParser.parse(RawParserUtil.parse(raw, PersonParser.COLUMN_COUNT));
   }
 
