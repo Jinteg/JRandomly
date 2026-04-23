@@ -1,6 +1,7 @@
 package de.jinteg.randomly.domain.finance;
 
 import de.jinteg.randomly.JRandomly;
+import de.jinteg.randomly.internal.catalog.CatalogEntryLookup;
 import de.jinteg.randomly.internal.catalog.NumberedPropertiesCatalog;
 import de.jinteg.randomly.internal.catalog.RawParserUtil;
 
@@ -12,8 +13,11 @@ import static java.util.Locale.ENGLISH;
  * Provides finance-related random data, such as stock symbols and stock entries.
  */
 public final class FinanceRandomly {
-  private static final List<Currency> AVAILABLE_CURRENCIES = List.copyOf(Currency.getAvailableCurrencies());
+
+  private static final String STOCK_CATALOG_PATH = "de/jinteg/randomly/catalog/finance/stocks";
   private static final String CRYPTO_ASSET_CATALOG_PATH = "de/jinteg/randomly/catalog/finance/crypto_assets";
+  private static final List<Currency> AVAILABLE_CURRENCIES = List.copyOf(Currency.getAvailableCurrencies());
+
   private final JRandomly randomly;
 
   /**
@@ -25,6 +29,13 @@ public final class FinanceRandomly {
     this.randomly = Objects.requireNonNull(randomly, "randomly must not be null");
   }
 
+  private static boolean hasLeadingColumn(String rawEntry, String expectedValue) {
+    int separatorIndex = rawEntry.indexOf('|');
+    if (separatorIndex < 0) {
+      return false;
+    }
+    return rawEntry.substring(0, separatorIndex).trim().equals(expectedValue);
+  }
 
   /**
    * Returns a stock symbol using the locale of the given JRandomly instance.
@@ -46,12 +57,46 @@ public final class FinanceRandomly {
   }
 
   /**
-   * Returns a random, consistent stock pick (symbol, companyName, market cap, price, currency code, ISIN, MIC).
+   * Returns a random, consistent stock pick (symbol, companyName, market cap, price,
+   * currency code, ISIN, MIC).
    *
    * @return stock pick
    */
   public StockPick stock() {
     return stock(randomly.getLocale());
+  }
+
+  /**
+   * Returns the exact stock entry for the given symbol using the configured locale.
+   *
+   * @param symbol stock symbol
+   * @return stock pick
+   */
+  public StockPick stockBySymbol(String symbol) {
+    return stockBySymbol(symbol, randomly.getLocale());
+  }
+
+  /**
+   * Returns the exact stock entry for the given symbol and locale.
+   *
+   * @param symbol stock symbol
+   * @param locale locale to use for catalog selection
+   * @return stock pick
+   */
+  public StockPick stockBySymbol(String symbol, Locale locale) {
+    Objects.requireNonNull(symbol, "symbol");
+    Objects.requireNonNull(locale, "locale");
+
+    String normalizedSymbol = symbol.trim();
+
+    String raw = CatalogEntryLookup.firstMatchingEntry(
+        STOCK_CATALOG_PATH,
+        locale,
+        entry -> hasLeadingColumn(entry, normalizedSymbol),
+        "Stock symbol %s not found for locale %s"
+            .formatted(normalizedSymbol, locale.getLanguage())
+    );
+    return StockPick.parse(RawParserUtil.parse(raw, StockPick.COLUMN_COUNT));
   }
 
   /**
@@ -65,17 +110,51 @@ public final class FinanceRandomly {
   }
 
   /**
-   * Returns a random, consistent stock pick (symbol, companyName, market cap, price, currency code, ISIN, MIC).
+   * Returns the exact crypto asset entry for the given symbol quoted in the currency
+   * derived from the configured locale.
+   *
+   * @param symbol crypto asset symbol
+   * @return crypto asset pick in locale-specific currency
+   */
+  public CryptoAssetPick cryptoAssetBySymbol(String symbol) {
+    return cryptoAssetBySymbol(symbol, getLocaleCurrencyCode());
+  }
+
+  /**
+   * Returns the exact crypto asset entry for the given symbol quoted in the given currency.
+   *
+   * @param symbol            crypto asset symbol
+   * @param quoteCurrencyCode ISO 4217 currency code (e.g. "EUR", "USD", "JPY")
+   * @return crypto asset entry with converted price and market cap
+   */
+  public CryptoAssetPick cryptoAssetBySymbol(String symbol, String quoteCurrencyCode) {
+    Objects.requireNonNull(symbol, "symbol");
+    Objects.requireNonNull(quoteCurrencyCode, "quoteCurrencyCode");
+
+    String normalizedSymbol = symbol.trim();
+
+    String raw = CatalogEntryLookup.firstMatchingEntry(
+        CRYPTO_ASSET_CATALOG_PATH,
+        ENGLISH,
+        entry -> hasLeadingColumn(entry, normalizedSymbol),
+        "Crypto asset symbol %s not found".formatted(normalizedSymbol)
+    );
+    return CryptoAssetParser.parse(
+        RawParserUtil.parse(raw, CryptoAssetParser.COLUMN_COUNT),
+        quoteCurrencyCode
+    );
+  }
+
+  /**
+   * Returns a random, consistent stock pick (symbol, companyName, market cap, price,
+   * currency code, ISIN, MIC).
    *
    * @param locale locale to use for catalog selection
    * @return picked stock
    */
   public StockPick stock(Locale locale) {
     Objects.requireNonNull(locale, "locale");
-    List<String> entries = NumberedPropertiesCatalog.loadList(
-        "de/jinteg/randomly/catalog/finance/stocks",
-        locale
-    );
+    List<String> entries = NumberedPropertiesCatalog.loadList(STOCK_CATALOG_PATH, locale);
     String raw = entries.get(randomly.index(entries.size()));
     return StockPick.parse(RawParserUtil.parse(raw, StockPick.COLUMN_COUNT));
   }
@@ -133,16 +212,16 @@ public final class FinanceRandomly {
   }
 
   /**
-   * Returns a random currency code, excluding the specified codes.
+   * Returns a random currency symbol, excluding the specified symbols.
    *
-   * @param excluding currency codes to exclude
-   * @return random currency code
+   * @param excluding currency symbols to exclude
+   * @return random currency symbol
    */
   public String currencySymbol(Collection<String> excluding) {
     Objects.requireNonNull(excluding, "excluding");
     List<String> filtered = AVAILABLE_CURRENCIES.stream()
         .map(Currency::getSymbol)
-        .filter(code -> !excluding.contains(code))
+        .filter(symbol -> !excluding.contains(symbol))
         .toList();
     return randomly.elementOf(filtered);
   }
@@ -195,5 +274,4 @@ public final class FinanceRandomly {
   public String cryptoPairSymbol(String quoteCurrencyCode) {
     return cryptoAsset(quoteCurrencyCode).pairSymbol();
   }
-
 }

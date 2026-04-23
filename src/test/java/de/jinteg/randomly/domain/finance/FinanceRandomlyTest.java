@@ -15,223 +15,303 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class FinanceRandomlyTest {
 
-    private static List<String> allowedSymbolsFor(Locale locale) {
-        return NumberedPropertiesCatalog.loadList(
-                        "de/jinteg/randomly/catalog/finance/stocks",
-                        locale
-                ).stream()
-                .map(raw -> StockPick.parse(RawParserUtil.parse(raw, StockPick.COLUMN_COUNT)).symbol())
-                .toList();
-    }
+  private static List<String> allowedSymbolsFor(Locale locale) {
+    return NumberedPropertiesCatalog.loadList(
+            "de/jinteg/randomly/catalog/finance/stocks",
+            locale
+        ).stream()
+        .map(raw -> StockPick.parse(RawParserUtil.parse(raw, StockPick.COLUMN_COUNT)).symbol())
+        .toList();
+  }
 
-    private static final List<String> ALLOWED_US_SYMBOLS = allowedSymbolsFor(Locale.US);
-    private static final List<String> ALLOWED_DE_SYMBOLS = allowedSymbolsFor(Locale.GERMANY);
+  private static String firstSymbolFor(Locale locale) {
+    return allowedSymbolsFor(locale).getFirst();
+  }
 
-    @AfterEach
-    void cleanup() {
-        System.clearProperty("jrandomly.seed");
-        System.clearProperty("jrandomly.locale");
-    }
+  private static final List<String> ALLOWED_US_SYMBOLS = allowedSymbolsFor(Locale.US);
+  private static final List<String> ALLOWED_DE_SYMBOLS = allowedSymbolsFor(Locale.GERMANY);
 
-    @Test
-    void stockSymbol_usesConfiguredLocaleByDefault() {
-        System.setProperty("jrandomly.seed", "1");
-        System.setProperty("jrandomly.locale", "de-DE");
+  @AfterEach
+  void cleanup() {
+    System.clearProperty("jrandomly.seed");
+    System.clearProperty("jrandomly.locale");
+  }
 
-        JRandomly r = JRandomly.randomly("FinanceTest#de");
-        String sym = r.finance().stockSymbol();
+  @Test
+  void stockSymbol_usesConfiguredLocaleByDefault() {
+    System.setProperty("jrandomly.seed", "1");
+    System.setProperty("jrandomly.locale", "de-DE");
 
-        assertThat(sym).isIn(ALLOWED_DE_SYMBOLS);
-    }
+    JRandomly r = JRandomly.randomly("FinanceTest#de");
+    String sym = r.finance().stockSymbol();
 
-    @Test
-    void stockSymbol_canBeOverriddenPerCallChainWithLocaleView() {
-        System.setProperty("jrandomly.seed", "1");
-        System.setProperty("jrandomly.locale", "de-DE");
+    assertThat(sym).isIn(ALLOWED_DE_SYMBOLS);
+  }
 
-        JRandomly r = JRandomly.randomly("FinanceTest#override");
-        String sym = r.finance().stockSymbol(Locale.US);
+  @Test
+  void stockSymbol_canBeOverriddenPerCallChainWithLocaleView() {
+    System.setProperty("jrandomly.seed", "1");
+    System.setProperty("jrandomly.locale", "de-DE");
 
-        assertThat(sym).isIn(ALLOWED_US_SYMBOLS);
-    }
+    JRandomly r = JRandomly.randomly("FinanceTest#override");
+    String sym = r.finance().stockSymbol(Locale.US);
 
-    @Test
-    void stock() {
-        // given
-        System.setProperty("jrandomly.seed", "1");
-        System.setProperty("jrandomly.locale", "de-DE");
+    assertThat(sym).isIn(ALLOWED_US_SYMBOLS);
+  }
 
-        // when
-        JRandomly r = JRandomly.randomly("FinanceTest#stockPick");
-        StockPick stockPick = r.finance().stock(Locale.US);
+  @Test
+  void stock() {
+    System.setProperty("jrandomly.seed", "1");
+    System.setProperty("jrandomly.locale", "de-DE");
 
-        // then
-        assertThat(stockPick).isNotNull();
-        assertThat(stockPick.symbol()).isIn(ALLOWED_US_SYMBOLS);
-        assertThat(stockPick.companyName()).isNotBlank();
-        assertThat(stockPick.marketCap()).isPositive();
-        assertThat(stockPick.price()).isPositive();
-        assertThat(stockPick.currencyCode()).isEqualTo("USD");
-        assertThat(stockPick.mic()).isNotEmpty();
-    }
+    JRandomly r = JRandomly.randomly("FinanceTest#stockPick");
+    StockPick stockPick = r.finance().stock(Locale.US);
 
+    assertThat(stockPick).isNotNull();
+    assertThat(stockPick.symbol()).isIn(ALLOWED_US_SYMBOLS);
+    assertThat(stockPick.companyName()).isNotBlank();
+    assertThat(stockPick.marketCap()).isPositive();
+    assertThat(stockPick.price()).isPositive();
+    assertThat(stockPick.currencyCode()).isEqualTo("USD");
+    assertThat(stockPick.mic()).isNotEmpty();
+  }
 
-    @Test
-    void stock_withLocale() {
-        System.setProperty("jrandomly.seed", "1");
-        System.setProperty("jrandomly.locale", "de-DE");
+  @Test
+  void stock_withLocale() {
+    System.setProperty("jrandomly.seed", "1");
+    System.setProperty("jrandomly.locale", "de-DE");
 
-        JRandomly r = JRandomly.randomly("FinanceTest#stockPickLocale");
-        StockPick stockPick = r.finance().stock(Locale.GERMANY);
-        assertThat(stockPick).isNotNull();
-        assertThat(stockPick.symbol()).isIn(ALLOWED_DE_SYMBOLS);
-        assertThat(stockPick.companyName()).isNotBlank();
-        assertThat(stockPick.marketCap()).isPositive();
-        assertThat(stockPick.price()).isPositive();
-    }
+    JRandomly r = JRandomly.randomly("FinanceTest#stockPickLocale");
+    StockPick stockPick = r.finance().stock(Locale.GERMANY);
 
-    @Test
-    void stock_without_Locale_uses_default_locale() {
-        System.setProperty("jrandomly.seed", "1");
-        System.setProperty("jrandomly.locale", "de-DE");
+    assertThat(stockPick).isNotNull();
+    assertThat(stockPick.symbol()).isIn(ALLOWED_DE_SYMBOLS);
+    assertThat(stockPick.companyName()).isNotBlank();
+    assertThat(stockPick.marketCap()).isPositive();
+    assertThat(stockPick.price()).isPositive();
+  }
 
-        JRandomly r = JRandomly.randomly("FinanceTest#stockPickWOLocale");
-        StockPick stockPick = r.finance().stock();
-        assertThat(stockPick).isNotNull();
-        assertThat(stockPick.symbol()).isIn(ALLOWED_DE_SYMBOLS);
-        assertThat(stockPick.companyName()).isNotBlank();
-        assertThat(stockPick.marketCap()).isPositive();
-        assertThat(stockPick.price()).isPositive();
-    }
+  @Test
+  void stock_without_locale_uses_default_locale() {
+    System.setProperty("jrandomly.seed", "1");
+    System.setProperty("jrandomly.locale", "de-DE");
 
-    @Test
-    void stock_withUnsupportedLocale() {
-        System.setProperty("jrandomly.seed", "1");
+    JRandomly r = JRandomly.randomly("FinanceTest#stockPickWOLocale");
+    StockPick stockPick = r.finance().stock();
 
-        JRandomly r = JRandomly.randomly("FinanceTest#stockPickLocaleUnsupported");
+    assertThat(stockPick).isNotNull();
+    assertThat(stockPick.symbol()).isIn(ALLOWED_DE_SYMBOLS);
+    assertThat(stockPick.companyName()).isNotBlank();
+    assertThat(stockPick.marketCap()).isPositive();
+    assertThat(stockPick.price()).isPositive();
+  }
 
-        assertThatThrownBy(() -> r.finance().stock(Locale.ITALY))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Catalog not found")
-                .hasMessageContaining("it");
-    }
+  @Test
+  void stockBySymbol_returns_exact_stock_for_locale() {
+    String symbol = firstSymbolFor(Locale.US);
 
-    @Test
-    void currencyApi_returns_valid_values() {
-        JRandomly r = JRandomly.randomly("FinanceTest#Currency");
-        Currency currency = r.finance().currency();
-        String currencyCode = r.finance().currencyCode();
-        String currencySymbol = r.finance().currencySymbol();
+    StockPick stockPick = JRandomly.randomly("FinanceTest#stockBySymbol")
+        .finance()
+        .stockBySymbol(symbol, Locale.US);
 
-        assertThat(currency).isNotNull();
-        assertThat(currencyCode).hasSize(3);
-        assertThat(currencySymbol).isNotEmpty();
-    }
+    assertThat(stockPick).isNotNull();
+    assertThat(stockPick.symbol()).isEqualTo(symbol);
+    assertThat(stockPick.companyName()).isNotBlank();
+    assertThat(stockPick.currencyCode()).isEqualTo("USD");
+    assertThat(stockPick.marketCap()).isPositive();
+    assertThat(stockPick.price()).isPositive();
+    assertThat(stockPick.mic()).isNotBlank();
+  }
 
-    @Test
-    void currency_with_excluding() {
-        JRandomly r = JRandomly.randomly("FinanceTest#Currency");
-        List<Currency> excluding = List.of(Currency.getInstance("EUR"), Currency.getInstance("USD"));
-        Currency currency = r.finance().currency(excluding);
+  @Test
+  void stockBySymbol_uses_configured_locale_by_default() {
+    System.setProperty("jrandomly.locale", "de-DE");
+    String symbol = firstSymbolFor(Locale.GERMANY);
 
-        assertThat(currency).isNotNull()
-                .isNotEqualTo(Currency.getInstance("EUR"))
-                .isNotEqualTo(Currency.getInstance("USD"));
-    }
+    StockPick stockPick = JRandomly.randomly("FinanceTest#stockBySymbolDefaultLocale")
+        .finance()
+        .stockBySymbol(symbol);
 
-    @Test
-    void currencyCode_excluding() {
-        JRandomly r = JRandomly.randomly("FinanceTest#CurrencyCodeExcluding");
-        String currency1 = r.finance().currencyCode();
-        String currency2 = r.finance().currencyCode(List.of(currency1));
+    assertThat(stockPick).isNotNull();
+    assertThat(stockPick.symbol()).isEqualTo(symbol);
+    assertThat(stockPick.companyName()).isNotBlank();
+    assertThat(stockPick.currencyCode()).isNotBlank();
+    assertThat(stockPick.mic()).isNotBlank();
+  }
 
-        assertThat(currency1).isNotNull().isNotEqualTo(currency2);
-    }
+  @Test
+  void stockBySymbol_rejects_unknown_symbol() {
+    JRandomly r = JRandomly.randomly("FinanceTest#stockBySymbolMissing");
 
-    @Test
-    void currencySymbol_excluding() {
-        JRandomly r = JRandomly.randomly("FinanceTest#CurrencySymbolExcluding");
-        String currency1 = r.finance().currencySymbol();
-        String currency2 = r.finance().currencySymbol(List.of(currency1));
+    assertThatThrownBy(() -> r.finance().stockBySymbol("DOES_NOT_EXIST", Locale.US))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Stock symbol DOES_NOT_EXIST not found")
+        .hasMessageContaining("en");
+  }
 
-        assertThat(currency1).isNotNull().isNotEqualTo(currency2);
-    }
+  @Test
+  void stock_withUnsupportedLocale() {
+    System.setProperty("jrandomly.seed", "1");
 
-    @Test
-    void cryptoAsset_returns_valid_entry_in_usd() {
-        System.setProperty("jrandomly.seed", "1");
-        System.setProperty("jrandomly.locale", "us");
+    JRandomly r = JRandomly.randomly("FinanceTest#stockPickLocaleUnsupported");
 
-        JRandomly r = JRandomly.randomly("FinanceTest#cryptoUsd");
-        CryptoAssetPick pick = r.finance().cryptoAsset();
+    assertThatThrownBy(() -> r.finance().stock(Locale.ITALY))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Catalog not found")
+        .hasMessageContaining("it");
+  }
 
-        assertThat(pick).isNotNull();
-        assertThat(pick.pairSymbol()).endsWith("-USD");
-        assertThat(pick.baseSymbol()).isNotBlank();
-        assertThat(pick.assetName()).isNotBlank();
-        assertThat(pick.price()).isPositive();
-        assertThat(pick.quoteCurrencyCode()).isEqualTo("USD");
-        assertThat(pick.marketCap()).isPositive();
-        assertThat(pick.network()).isNotBlank();
-    }
+  @Test
+  void currencyApi_returns_valid_values() {
+    JRandomly r = JRandomly.randomly("FinanceTest#Currency");
+    Currency currency = r.finance().currency();
+    String currencyCode = r.finance().currencyCode();
+    String currencySymbol = r.finance().currencySymbol();
 
-    @Test
-    void cryptoAsset_converts_to_eur() {
-        System.setProperty("jrandomly.seed", "1");
+    assertThat(currency).isNotNull();
+    assertThat(currencyCode).hasSize(3);
+    assertThat(currencySymbol).isNotEmpty();
+  }
 
-        JRandomly r = JRandomly.randomly("FinanceTest#cryptoEur");
-        CryptoAssetPick pick = r.finance().cryptoAsset("EUR");
+  @Test
+  void currency_with_excluding() {
+    JRandomly r = JRandomly.randomly("FinanceTest#Currency");
+    List<Currency> excluding = List.of(Currency.getInstance("EUR"), Currency.getInstance("USD"));
+    Currency currency = r.finance().currency(excluding);
 
-        assertThat(pick.pairSymbol()).endsWith("-EUR");
-        assertThat(pick.quoteCurrencyCode()).isEqualTo("EUR");
-        assertThat(pick.price()).isPositive();
-        assertThat(pick.marketCap()).isPositive();
-    }
+    assertThat(currency).isNotNull()
+        .isNotEqualTo(Currency.getInstance("EUR"))
+        .isNotEqualTo(Currency.getInstance("USD"));
+  }
 
-    @Test
-    void cryptoPairSymbol_returns_valid_pair() {
-        System.setProperty("jrandomly.seed", "1");
+  @Test
+  void currencyCode_excluding() {
+    JRandomly r = JRandomly.randomly("FinanceTest#CurrencyCodeExcluding");
+    String currency1 = r.finance().currencyCode();
+    String currency2 = r.finance().currencyCode(List.of(currency1));
 
-        JRandomly r = JRandomly.randomly("FinanceTest#cryptoPair");
-        String pair = r.finance().cryptoPairSymbol("CHF");
+    assertThat(currency1).isNotNull().isNotEqualTo(currency2);
+  }
 
-        assertThat(pair).isNotBlank().contains("-CHF");
-    }
+  @Test
+  void currencySymbol_excluding() {
+    JRandomly r = JRandomly.randomly("FinanceTest#CurrencySymbolExcluding");
+    String currency1 = r.finance().currencySymbol();
+    String currency2 = r.finance().currencySymbol(List.of(currency1));
 
-    @Test
-    void cryptoAsset_with_unsupported_currency_throws() {
-        System.setProperty("jrandomly.seed", "1");
+    assertThat(currency1).isNotNull().isNotEqualTo(currency2);
+  }
 
-        JRandomly r = JRandomly.randomly("FinanceTest#cryptoFail");
+  @Test
+  void cryptoAsset_returns_valid_entry_in_usd() {
+    System.setProperty("jrandomly.seed", "1");
+    System.setProperty("jrandomly.locale", "us");
 
-        assertThatThrownBy(() -> r.finance().cryptoAsset("XYZ"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("No test FX rate available");
-    }
+    JRandomly r = JRandomly.randomly("FinanceTest#cryptoUsd");
+    CryptoAssetPick pick = r.finance().cryptoAsset();
 
-    @Test
-    void cryptoPairSymbol_with_different_currency() {
-        // Locale = de-DE → EUR
-        System.setProperty("jrandomly.locale", "de-DE");
-        JRandomly r = JRandomly.builder().withLocale(Locale.GERMANY).build();
+    assertThat(pick).isNotNull();
+    assertThat(pick.pairSymbol()).endsWith("-USD");
+    assertThat(pick.baseSymbol()).isNotBlank();
+    assertThat(pick.assetName()).isNotBlank();
+    assertThat(pick.price()).isPositive();
+    assertThat(pick.quoteCurrencyCode()).isEqualTo("USD");
+    assertThat(pick.marketCap()).isPositive();
+    assertThat(pick.network()).isNotBlank();
+  }
 
-        String symbol = r.finance().cryptoPairSymbol();// → "ETH-EUR"
-        assertThat(symbol).endsWith("-EUR");
+  @Test
+  void cryptoAssetBySymbol_returns_exact_entry_for_quote_currency() {
+    CryptoAssetPick pick = JRandomly.randomly("FinanceTest#cryptoBySymbol")
+        .finance()
+        .cryptoAssetBySymbol("BTC", "USD");
 
-        CryptoAssetPick eurPick = r.finance().cryptoAsset();// → BTC-EUR, price in EUR
-        assertThat(eurPick.pairSymbol()).endsWith("-EUR");
-        assertThat(eurPick.price()).isPositive();
-        assertThat(eurPick.quoteCurrencyCode()).isEqualTo("EUR");
-        assertThat(eurPick.marketCap()).isPositive();
-        assertThat(eurPick.network()).isNotBlank();
+    assertThat(pick).isNotNull();
+    assertThat(pick.pairSymbol()).isEqualTo("BTC-USD");
+    assertThat(pick.baseSymbol()).isEqualTo("BTC");
+    assertThat(pick.assetName()).isEqualTo("Bitcoin");
+    assertThat(pick.quoteCurrencyCode()).isEqualTo("USD");
+    assertThat(pick.price()).isPositive();
+    assertThat(pick.marketCap()).isPositive();
+    assertThat(pick.network()).isEqualTo("Bitcoin");
+  }
 
-        CryptoAssetPick usdPick = r.finance().cryptoAsset("USD");// → BTC-EUR, price in EUR
-        assertThat(usdPick.pairSymbol()).endsWith("-USD");
-        assertThat(eurPick.quoteCurrencyCode()).isEqualTo("EUR");
+  @Test
+  void cryptoAssetBySymbol_uses_locale_currency_by_default() {
+    JRandomly r = JRandomly.builder()
+        .withLocale(Locale.GERMANY)
+        .build();
 
-        CryptoAssetPick jpyPick = r.finance().cryptoAsset("JPY");// → BTC-JPY, price in JPY
-        assertThat(jpyPick.pairSymbol()).endsWith("-JPY");
+    CryptoAssetPick pick = r.finance().cryptoAssetBySymbol("BTC");
 
-    }
+    assertThat(pick).isNotNull();
+    assertThat(pick.pairSymbol()).isEqualTo("BTC-EUR");
+    assertThat(pick.quoteCurrencyCode()).isEqualTo("EUR");
+  }
+
+  @Test
+  void cryptoAssetBySymbol_rejects_unknown_symbol() {
+    JRandomly r = JRandomly.randomly("FinanceTest#cryptoBySymbolMissing");
+
+    assertThatThrownBy(() -> r.finance().cryptoAssetBySymbol("DOES_NOT_EXIST", "USD"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Crypto asset symbol DOES_NOT_EXIST not found");
+  }
+
+  @Test
+  void cryptoAsset_converts_to_eur() {
+    System.setProperty("jrandomly.seed", "1");
+
+    JRandomly r = JRandomly.randomly("FinanceTest#cryptoEur");
+    CryptoAssetPick pick = r.finance().cryptoAsset("EUR");
+
+    assertThat(pick.pairSymbol()).endsWith("-EUR");
+    assertThat(pick.quoteCurrencyCode()).isEqualTo("EUR");
+    assertThat(pick.price()).isPositive();
+    assertThat(pick.marketCap()).isPositive();
+  }
+
+  @Test
+  void cryptoPairSymbol_returns_valid_pair() {
+    System.setProperty("jrandomly.seed", "1");
+
+    JRandomly r = JRandomly.randomly("FinanceTest#cryptoPair");
+    String pair = r.finance().cryptoPairSymbol("CHF");
+
+    assertThat(pair).isNotBlank().contains("-CHF");
+  }
+
+  @Test
+  void cryptoAsset_with_unsupported_currency_throws() {
+    System.setProperty("jrandomly.seed", "1");
+
+    JRandomly r = JRandomly.randomly("FinanceTest#cryptoFail");
+
+    assertThatThrownBy(() -> r.finance().cryptoAsset("XYZ"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("No test FX rate available");
+  }
+
+  @Test
+  void cryptoPairSymbol_with_different_currency() {
+    System.setProperty("jrandomly.locale", "de-DE");
+    JRandomly r = JRandomly.builder().withLocale(Locale.GERMANY).build();
+
+    String symbol = r.finance().cryptoPairSymbol();
+    assertThat(symbol).endsWith("-EUR");
+
+    CryptoAssetPick eurPick = r.finance().cryptoAsset();
+    assertThat(eurPick.pairSymbol()).endsWith("-EUR");
+    assertThat(eurPick.price()).isPositive();
+    assertThat(eurPick.quoteCurrencyCode()).isEqualTo("EUR");
+    assertThat(eurPick.marketCap()).isPositive();
+    assertThat(eurPick.network()).isNotBlank();
+
+    CryptoAssetPick usdPick = r.finance().cryptoAsset("USD");
+    assertThat(usdPick.pairSymbol()).endsWith("-USD");
+    assertThat(eurPick.quoteCurrencyCode()).isEqualTo("EUR");
+
+    CryptoAssetPick jpyPick = r.finance().cryptoAsset("JPY");
+    assertThat(jpyPick.pairSymbol()).endsWith("-JPY");
+  }
 }
-
