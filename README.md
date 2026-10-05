@@ -136,6 +136,9 @@ JRandomly r2 = JRandomly.randomly("userTest");
 Domain catalogs are available for `de`, `en`, `ja` and `tr` (person, company) and `de`, `en`
 (finance stocks, text). An unsupported locale fails fast instead of silently falling back.
 
+Person and company data is fictitious test data. Company catalogs use well-known company names
+for readability; addresses, websites, email addresses, phone numbers and VAT ids are made up.
+
 ## Requirements
 
 - **Java 21** or higher

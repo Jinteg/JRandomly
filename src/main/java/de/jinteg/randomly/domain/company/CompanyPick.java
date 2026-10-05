@@ -3,6 +3,9 @@ package de.jinteg.randomly.domain.company;
 /**
  * Company pick with address, contact, and business classification data.
  *
+ * <p>Except for the company name, all values are fictitious test data
+ * (see {@link CompanyRandomly}).
+ *
  * @param name         company name
  * @param street       street name
  * @param streetNumber street number

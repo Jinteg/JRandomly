@@ -11,6 +11,10 @@ import java.util.Objects;
 
 /**
  * Provides company-related random data.
+ *
+ * <p>The catalogs use well-known company names for readability, but all other values are
+ * fictitious test data: addresses, {@code example.*} websites and email addresses, test phone
+ * numbers and {@code *-TEST-*} VAT ids. They do not describe the real companies.
  */
 public final class CompanyRandomly {
 
