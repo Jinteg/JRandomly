@@ -1,0 +1,12 @@
+# Store text files with LF in the repository, independent of local core.autocrlf settings
+* text=auto
+
+*.java       text diff=java
+*.properties text
+*.md         text diff=markdown
+*.xml        text
+Jenkinsfile  text
+
+*.png binary
+*.jpg binary
+*.jar binary
