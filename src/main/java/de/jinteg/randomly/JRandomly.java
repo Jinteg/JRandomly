@@ -3,6 +3,7 @@ package de.jinteg.randomly;
 import de.jinteg.randomly.core.DateTimeRandomly;
 import de.jinteg.randomly.core.IdRandomly;
 import de.jinteg.randomly.core.TextRandomly;
+import de.jinteg.randomly.domain.company.CompanyRandomly;
 import de.jinteg.randomly.domain.finance.FinanceRandomly;
 import de.jinteg.randomly.domain.person.PersonRandomly;
 import de.jinteg.randomly.internal.*;
@@ -266,6 +267,15 @@ public final class JRandomly {
    */
   public PersonRandomly person() {
     return new PersonRandomly(this);
+  }
+
+  /**
+   * Returns a CompanyRandomly instance for generating company-related values.
+   *
+   * @return CompanyRandomly instance
+   */
+  public CompanyRandomly company() {
+    return new CompanyRandomly(this);
   }
 
   // --- Core utilities ---

@@ -1,7 +1,7 @@
 package de.jinteg.randomly.domain.company;
 
 /**
- * Company pick with name, address data, and website.
+ * Company pick with address, contact, and business classification data.
  *
  * @param name         company name
  * @param street       street name
@@ -10,7 +10,13 @@ package de.jinteg.randomly.domain.company;
  * @param zipCode      zip code
  * @param state        state or province
  * @param country      country name
+ * @param countryCode  ISO-like country code
  * @param website      company website
+ * @param email        company email address
+ * @param phone        company phone number
+ * @param sector       business sector
+ * @param industry     business industry
+ * @param vatId        VAT or tax identifier
  */
 public record CompanyPick(
     String name,
@@ -20,6 +26,12 @@ public record CompanyPick(
     String zipCode,
     String state,
     String country,
-    String website
+    String countryCode,
+    String website,
+    String email,
+    String phone,
+    String sector,
+    String industry,
+    String vatId
 ) {
 }
