@@ -218,6 +218,26 @@ class ReproducibilityContractTest {
   }
 
   @Test
+  @DisplayName("Forks return pinned values derived from instance seed and name")
+  void fork_values_are_pinned() {
+    JRandomly r = fixed("contract#fork", Locale.ENGLISH);
+
+    List<String> values = asStrings(
+        r.fork("customer").person().data().username(),
+        r.fork("stock").finance().stock().symbol(),
+        r.fork("order").fork("items").intBetween(1, 1000),
+        r.intBetween(1, 1000)
+    );
+
+    assertThat(values).containsExactly(
+        "ajohnsonT7",
+        "EA",
+        "494",
+        "722"
+    );
+  }
+
+  @Test
   @DisplayName("Company module returns pinned catalog values")
   void company_values_are_pinned() {
     var company = fixed("contract#company", Locale.ENGLISH).company();

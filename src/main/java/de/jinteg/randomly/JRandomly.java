@@ -40,6 +40,11 @@ public final class JRandomly {
   private static final AtomicLong RANDOMLY_INSTANCE_COUNTER = new AtomicLong(0);
 
   /**
+   * Prefix of the substream purpose for forks; part of the reproducibility contract.
+   */
+  private static final String FORK_PURPOSE_PREFIX = "fork:";
+
+  /**
    * Auto-generated root seed, used when no external seed is provided.
    * Initialized lazily on first access, cached for the entire JVM lifetime.
    */
@@ -50,7 +55,8 @@ public final class JRandomly {
   private final long instanceSeed;
   private final String scopeLabel;
 
-  private JRandomly(JRandomlyConfig config, RandomGenerator rng, long instanceSeed, String scopeLabel) {
+  private JRandomly(JRandomlyConfig config, RandomGenerator rng, long instanceSeed, String scopeLabel,
+                    boolean writeReplayEntry) {
     this.config = Objects.requireNonNull(config, "config");
     this.rng = Objects.requireNonNull(rng, "rng");
     this.instanceSeed = instanceSeed;
@@ -61,7 +67,9 @@ public final class JRandomly {
             + " runStartTime=" + config.runStartTime()
             + " locale=" + config.locale().toLanguageTag());
 
-    ReplayFileWriter.writeEntry(scopeLabel, replayInfo(), JRandomly::captureInitialCaller);
+    if (writeReplayEntry) {
+      ReplayFileWriter.writeEntry(scopeLabel, replayInfo(), JRandomly::captureInitialCaller);
+    }
   }
 
   /**
@@ -174,6 +182,47 @@ public final class JRandomly {
         + " -Djrandomly.locale=" + config.locale().toLanguageTag()
         + " -Djrandomly.maybeRate=" + config.maybeRate()
         + " -Djrandomly.version=" + JRandomlyVersion.current();
+  }
+
+  // --- Forks ---
+
+  /**
+   * Returns a new instance with an independent random stream, derived from this instance's
+   * seed and the given name.
+   *
+   * <p>Use forks to keep groups of values stable when other calls are added to a test:
+   * the values of {@code r.fork("customer")} depend only on this instance's seed and the name
+   * {@code "customer"}, not on how many values were generated from {@code r} or from other
+   * forks before.
+   *
+   * <pre>{@code
+   * JRandomly r = JRandomly.randomly("OrderTest#createsOrder");
+   * PersonPick customer = r.fork("customer").person().data();
+   * StockPick  stock    = r.fork("stock").finance().stock();
+   * }</pre>
+   *
+   * <ul>
+   *   <li>Forking does not consume values from this instance.</li>
+   *   <li>The same name always yields the same stream: two calls of {@code fork("a")}
+   *       return two instances that generate the same values.</li>
+   *   <li>Forks can be nested, e.g. {@code r.fork("order").fork("items")}.</li>
+   *   <li>Locale, {@code runStartTime} and {@code maybeRate} are inherited.</li>
+   *   <li>Each fork is a separate instance, so forks such as {@code r.fork("worker-" + i)}
+   *       can be handed to different threads and stay reproducible.</li>
+   *   <li>Forks do not write replay entries; they are reproducible from this instance.</li>
+   * </ul>
+   *
+   * @param name fork name, must not be blank
+   * @return new instance with an independent, reproducible random stream
+   * @throws IllegalArgumentException if {@code name} is {@code null} or blank
+   */
+  public JRandomly fork(String name) {
+    if (name == null || name.isBlank()) {
+      throw new IllegalArgumentException("fork name must be non-null and non-blank");
+    }
+    long forkSeed = SeedDerivation.seedForSubstream(instanceSeed, FORK_PURPOSE_PREFIX + name);
+    return new JRandomly(config, RNG_FACTORY.create(forkSeed), forkSeed,
+        scopeLabel + "/fork(\"" + name + "\")", false);
   }
 
   // --- Core modules ---
@@ -819,7 +868,7 @@ public final class JRandomly {
         scopeLabel = "randomly()#" + idx;
       }
 
-      return new JRandomly(cfg, RNG_FACTORY.create(instanceSeed), instanceSeed, scopeLabel);
+      return new JRandomly(cfg, RNG_FACTORY.create(instanceSeed), instanceSeed, scopeLabel, true);
     }
   }
 }

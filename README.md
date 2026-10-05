@@ -130,6 +130,27 @@ A `JRandomly` instance is **not thread-safe**. Create one instance per test (or 
 instead of sharing an instance between threads. Unscoped `randomly()` instances depend on
 their creation order and are therefore not reproducible in parallel runs.
 
+## Stable Values with Forks
+
+All values of one instance come from one random stream. If you add a call, every value
+generated after it changes. Use named forks for groups of values that must stay stable:
+
+``` java
+JRandomly r = JRandomly.randomly("OrderTest#createsOrder");
+
+PersonPick customer = r.fork("customer").person().data();
+StockPick  stock    = r.fork("stock").finance().stock();
+// Adding calls on r or on other forks does not change customer or stock.
+```
+
+- A fork's values depend only on the parent's seed and the fork name; forking does not
+  consume values from the parent.
+- The same name always yields the same stream; forks can be nested
+  (`r.fork("order").fork("items")`).
+- Locale, `runStartTime` and `maybeRate` are inherited.
+- For multithreaded test code, hand one fork per thread to the workers
+  (`r.fork("worker-" + i)`) – each stays reproducible.
+
 ## Modules
 
 | Module       | Access         | Examples                                               |

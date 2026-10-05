@@ -70,7 +70,9 @@ Generators must not depend on unspecified iteration orders or JVM-specific state
   the order influences selection – use `List`, `LinkedHashMap` or sorted collections,
 - catalog order is defined by key prefix, then entry number (`NumberedPropertiesCatalog`),
 - no wall-clock time (`Instant.now()`, `LocalDate.now()`) – use `runStartTime`,
-- no `Math.random()`, `new Random()` or other RNGs – use the instance RNG.
+- no `Math.random()`, `new Random()` or other RNGs – use the instance RNG,
+- seed derivation for scopes, unscoped instances and forks (`SeedDerivation`, `"fork:"`
+  prefix) must not change (ADR-0002).
 
 ### 5. Caller responsibilities
 
@@ -83,6 +85,9 @@ The guarantee also depends on inputs that only the caller controls:
   stable order.
 - `dateTime()` uses the system default time zone. Use `dateTime(ZoneId)` for values that
   must not depend on the machine.
+- All values of one instance come from one stream, so the **sequence of calls** is part of the
+  input. Use `fork(name)` for groups of values that must stay stable when other calls are
+  added, and one fork per thread for multithreaded test code.
 
 ## Known gaps
 

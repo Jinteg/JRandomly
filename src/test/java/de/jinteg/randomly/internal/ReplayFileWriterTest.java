@@ -94,6 +94,18 @@ class ReplayFileWriterTest {
     }
 
     @Test
+    @DisplayName("Forks do not write their own replay entries")
+    void replayFile_forksWriteNoEntries() throws IOException {
+        JRandomly r = JRandomly.randomly("FileTest#forkParent");
+        r.fork("a");
+        r.fork("b").fork("c");
+
+        assertThat(Files.readAllLines(REPLAY_FILE))
+                .filteredOn(line -> line.contains("FileTest#forkParent"))
+                .hasSize(1);
+    }
+
+    @Test
     void replayFile_appendsMultipleEntries() throws IOException {
         System.setProperty("jrandomly.seed", "99");
         System.setProperty("jrandomly.runStartTime", "2026-06-15T10:00:00Z");

@@ -12,6 +12,9 @@ Changes that alter generated values for an existing seed are listed under
 
 ### Added
 
+- `fork(String name)`: named, independent random streams within an instance. Values of a
+  fork depend only on the parent's seed and the name, so they stay stable when other calls
+  are added; one fork per thread makes multithreaded test code reproducible (ADR-0002)
 - `Automatic-Module-Name: de.jinteg.randomly` in the JAR manifest for users on the module path
 
 ### Fixed

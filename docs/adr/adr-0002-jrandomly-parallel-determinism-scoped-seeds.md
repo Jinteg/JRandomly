@@ -84,6 +84,28 @@ When no root seed is provided via system property or environment variable, `JRan
 
 **Rationale:** This eliminates the split behavior between "seeded run" and "unseeded run." Every run has a root seed; the only difference is whether the user provided it or JRandomly generated it. Replay is always possible.
 
+### 6) Named forks within an instance (added 2026-10-05, version 0.4.0)
+
+Scopes make instances independent of each other, but all values of one instance still come
+from a single stream: inserting a call shifts every following value, which breaks tests that
+rely on specific values.
+
+`JRandomly.fork(String name)` returns a new instance whose seed is derived from the parent's
+instance seed and the name:
+
+```
+forkSeed = seedForSubstream(instanceSeed, "fork:" + name)
+```
+
+- Forking does not consume values from the parent.
+- The same name always yields the same stream; forks can be nested.
+- Configuration (locale, `runStartTime`, `maybeRate`) is inherited.
+- Forks are separate instances and can be handed to different threads, which makes
+  multithreaded test code reproducible (one fork per thread).
+- Forks do not write replay entries; they are reproducible from the parent's scope and name.
+- The derivation (`"fork:"` prefix, `seedForSubstream`) is part of the reproducibility contract
+  (ADR-0008) and must stay stable across versions.
+
 ## Consequences
 
 ### Positive
