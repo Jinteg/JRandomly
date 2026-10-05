@@ -4,7 +4,10 @@ import de.jinteg.randomly.JRandomly;
 import de.jinteg.randomly.internal.catalog.NumberedPropertiesCatalog;
 import de.jinteg.randomly.internal.catalog.RawParserUtil;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.Currency;
 import java.util.List;
@@ -137,6 +140,22 @@ class FinanceRandomlyTest {
     assertThat(stockPick.companyName()).isNotBlank();
     assertThat(stockPick.currencyCode()).isNotBlank();
     assertThat(stockPick.mic()).isNotBlank();
+  }
+
+  @ParameterizedTest(name = "{0} in locale {1}")
+  @CsvSource({
+      "AAPL,  en",
+      "BRK.B, en",
+      "SAP,   de",
+      "ADL,   de"
+  })
+  @DisplayName("Finds well-known symbols from every catalog group")
+  void stockBySymbol_finds_symbols_from_every_catalog_group(String symbol, String language) {
+    StockPick stockPick = JRandomly.randomly("FinanceTest#stockBySymbolKnown")
+        .finance()
+        .stockBySymbol(symbol, Locale.forLanguageTag(language));
+
+    assertThat(stockPick.symbol()).isEqualTo(symbol);
   }
 
   @Test

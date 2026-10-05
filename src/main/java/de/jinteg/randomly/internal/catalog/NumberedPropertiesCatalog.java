@@ -81,26 +81,41 @@ public final class NumberedPropertiesCatalog {
         return suffixes;
     }
 
+    /**
+     * Collects all numbered entries, ordered by key prefix and then by number.
+     * <p>
+     * Grouping by prefix keeps every entry of catalogs that contain several groups
+     * (e.g. {@code xde40.1} and {@code xdem50.1}) and makes the order independent of
+     * the hash-based iteration order of {@link Properties}.
+     */
     private static List<String> toNumberedList(Properties p) {
-        TreeMap<Integer, String> ordered = new TreeMap<>();
+        TreeMap<String, TreeMap<Integer, String>> groups = new TreeMap<>();
 
-        for (String key : p.stringPropertyNames()) {
+        for (String rawKey : p.stringPropertyNames()) {
+            String key = stripByteOrderMark(rawKey);
             int dot = key.lastIndexOf('.');
             if (dot < 0 || dot == key.length() - 1) continue;
 
             String idxText = key.substring(dot + 1);
             try {
                 int idx = Integer.parseInt(idxText);
-                ordered.put(idx, p.getProperty(key));
+                groups.computeIfAbsent(key.substring(0, dot), prefix -> new TreeMap<>())
+                        .put(idx, p.getProperty(rawKey));
             } catch (NumberFormatException ignored) {
                 // ignore non-numbered keys
             }
         }
 
-        if (ordered.isEmpty()) {
+        if (groups.isEmpty()) {
             throw new IllegalStateException("Catalog does not contain numbered keys like name.1, name.2, ...");
         }
 
-        return List.copyOf(ordered.values());
+        List<String> ordered = new ArrayList<>();
+        groups.values().forEach(group -> ordered.addAll(group.values()));
+        return List.copyOf(ordered);
+    }
+
+    private static String stripByteOrderMark(String key) {
+        return key.startsWith("﻿") ? key.substring(1) : key;
     }
 }
