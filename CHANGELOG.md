@@ -10,6 +10,8 @@ Changes that alter generated values for an existing seed are listed under
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-05
+
 ### Added
 
 - Person domain `person()` with localized catalogs (de, en, ja, tr) and gender registry
@@ -26,11 +28,8 @@ Changes that alter generated values for an existing seed are listed under
 
 - Numbered catalogs with several key groups (stock catalogs) lost entries: only 60 of 150
   German and 101 of 151 English stocks were reachable; `stockBySymbol("AAPL")` failed
-- `person().gender()` returned different values for the same seed across JVM runs
 - UTF-8 encoding of German text, stock and crypto catalog entries
-- Japanese person catalog now uses localized marital status values
-- Typo in stock entry `Münchener Rück SE`
-- SpotBugs findings in catalog loader and replay file writer
+- Catalog loader did not close its reader (resource leak)
 
 ### Reproducibility
 
@@ -84,7 +83,8 @@ Changes that alter generated values for an existing seed are listed under
 - Zero external runtime dependencies – pure Java 21
 - Replay info with copy-paste friendly CLI args
 
-[Unreleased]: https://github.com/Jinteg/JRandomly/compare/v0.2.0...develop
+[Unreleased]: https://github.com/Jinteg/JRandomly/compare/v0.3.0...develop
+[0.3.0]: https://github.com/Jinteg/JRandomly/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Jinteg/JRandomly/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Jinteg/JRandomly/releases/tag/v0.1.0
 
