@@ -105,6 +105,20 @@
                 </configuration>
             </plugin>
 
+            <!-- Stable JPMS module name for users on the module path -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Automatic-Module-Name>de.jinteg.randomly</Automatic-Module-Name>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+
             <!-- Sources -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

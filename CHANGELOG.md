@@ -10,6 +10,21 @@ Changes that alter generated values for an existing seed are listed under
 
 ## [Unreleased]
 
+### Added
+
+- `Automatic-Module-Name: de.jinteg.randomly` in the JAR manifest for users on the module path
+
+### Fixed
+
+- The replay file header could name the caller of another thread in parallel test runs
+- README Quick Start used methods that do not exist (`pastDate()`, `futureInstant()`)
+- Javadoc of `dateTime().instant()`, `localDate()` and `localDateTime()` described random
+  values; they return the `runStartTime` anchor ("now" / "today" of the test run)
+
+### Documentation
+
+- Thread safety of `JRandomly` instances documented (one instance per test or thread)
+
 ## [0.3.0] - 2026-10-05
 
 ### Added
