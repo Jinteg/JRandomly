@@ -101,6 +101,7 @@ Details: [ADR-0008](docs/adr/adr-0008-jrandomly-reproducibility-contract.md).
 | `jrandomly.seed`         | `JRANDOMLY_SEED`           | auto (entropy-based)  | Root seed for RNG               |
 | `jrandomly.runStartTime` | `JRANDOMLY_RUN_START_TIME` | `Instant.now()`       | Time anchor for date generators |
 | `jrandomly.locale`       | `JRANDOMLY_LOCALE`         | `Locale.getDefault()` | Default locale for catalogs     |
+| `jrandomly.version`      | `JRANDOMLY_VERSION`        | –                     | Version a replay was recorded with; logs a warning if it differs from the running version |
 
 **Precedence:** Builder API > System Property > Environment Variable > Default
 

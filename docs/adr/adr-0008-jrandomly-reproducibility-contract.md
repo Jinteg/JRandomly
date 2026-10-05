@@ -145,6 +145,14 @@ Deferred. A setting such as `jrandomly.catalogVersion` could keep old catalog sn
 reproducible across upgrades, at the cost of shipping multiple catalog versions.
 Reconsider if users ask for cross-version replay.
 
+### Version in replay information
+
+The JRandomly version is provided by `JRandomlyVersion` (filled in by Maven resource
+filtering) and shown in the replay file header. If `jrandomly.version` /
+`JRANDOMLY_VERSION` is set and differs from the running version, a warning is logged once
+per JVM, because generated values may differ.
+
 ## Follow-ups
 
-- Add the JRandomly version to `replayInfo()` and to the replay file header.
+- Add `-Djrandomly.version=...` to `replayInfo()` so copied replay arguments carry the
+  version.

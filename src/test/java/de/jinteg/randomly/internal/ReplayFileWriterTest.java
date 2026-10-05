@@ -38,7 +38,7 @@ class ReplayFileWriterTest {
         assertThat(REPLAY_FILE).exists();
         String content = Files.readString(REPLAY_FILE);
         assertThat(content)
-                .contains("# JRandomly (Version: 0.1.0)")
+                .contains("# JRandomly (Version: " + JRandomlyVersion.current() + ")")
                 .contains("Replay Info")
                 .contains("-Djrandomly.seed=42")
                 .contains("-Djrandomly.maybeRate=0.")

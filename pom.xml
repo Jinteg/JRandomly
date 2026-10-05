@@ -77,6 +77,24 @@
     </dependencies>
 
     <build>
+        <resources>
+            <!-- Only the version file is filtered; catalogs are copied unchanged -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>de/jinteg/randomly/jrandomly-version.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>de/jinteg/randomly/jrandomly-version.properties</exclude>
+                </excludes>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

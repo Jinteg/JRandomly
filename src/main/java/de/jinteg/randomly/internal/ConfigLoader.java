@@ -27,6 +27,8 @@ public final class ConfigLoader {
      * @return JRandomlyConfig instance with loaded configuration
      */
     public JRandomlyConfig load() {
+        JRandomlyVersion.warnIfReplayVersionDiffers();
+
         Optional<Long> seed = readLong(JRandomlyConfig.PROP_SEED)
                 .or(() -> readLongEnv(JRandomlyConfig.ENV_SEED));
 

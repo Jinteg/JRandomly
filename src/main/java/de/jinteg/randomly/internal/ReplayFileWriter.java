@@ -78,7 +78,7 @@ public final class ReplayFileWriter {
     }
 
     private static String createReplayHeader(String initialCaller) {
-        return "# JRandomly (Version: 0.1.0) - " + "Replay Info" +
+        return "# JRandomly (Version: " + JRandomlyVersion.current() + ") - " + "Replay Info" +
                 System.lineSeparator() +
                 "# Run started at " + Instant.now() +
                 " | System ZoneID: " + ZoneId.systemDefault() +
