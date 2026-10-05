@@ -1,7 +1,7 @@
 package de.jinteg.randomly.domain.company;
 
 import de.jinteg.randomly.JRandomly;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
@@ -11,17 +11,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CompanyRandomlyTest {
 
-  @AfterEach
-  void cleanup() {
-    System.clearProperty("jrandomly.locale");
-    System.clearProperty("jrandomly.seed");
-  }
-
   @Test
+  @DisplayName("data() uses the configured locale")
   void data_returns_german_company_for_configured_locale() {
-    System.setProperty("jrandomly.locale", "de");
-
-    CompanyPick pick = JRandomly.randomly("CompanyTest#de")
+    CompanyPick pick = JRandomly.builder()
+        .withScope("CompanyTest#de")
+        .withLocale(Locale.GERMAN)
+        .build()
         .company()
         .data();
 
@@ -34,6 +30,7 @@ class CompanyRandomlyTest {
   }
 
   @Test
+  @DisplayName("data(Locale) uses the given locale")
   void data_returns_us_company_for_explicit_locale() {
     CompanyPick pick = JRandomly.randomly("CompanyTest#us")
         .company()
@@ -48,6 +45,7 @@ class CompanyRandomlyTest {
   }
 
   @Test
+  @DisplayName("companyByName finds a US company")
   void companyByName_returns_exact_us_company() {
     CompanyPick pick = JRandomly.randomly("CompanyTest#apple")
         .company()
@@ -61,6 +59,7 @@ class CompanyRandomlyTest {
   }
 
   @Test
+  @DisplayName("companyByName finds a German company")
   void companyByName_returns_exact_german_company() {
     CompanyPick pick = JRandomly.randomly("CompanyTest#sap")
         .company()
@@ -74,6 +73,7 @@ class CompanyRandomlyTest {
   }
 
   @Test
+  @DisplayName("companyByName rejects an unknown name")
   void companyByName_rejects_unknown_name() {
     assertThatThrownBy(() -> JRandomly.randomly("CompanyTest#missing")
         .company()

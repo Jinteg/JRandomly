@@ -218,6 +218,26 @@ class ReproducibilityContractTest {
   }
 
   @Test
+  @DisplayName("Company module returns pinned catalog values")
+  void company_values_are_pinned() {
+    var company = fixed("contract#company", Locale.ENGLISH).company();
+
+    List<String> values = asStrings(
+        company.data(Locale.ENGLISH).name(),
+        company.data(Locale.GERMAN).name(),
+        company.data(Locale.JAPANESE).name(),
+        company.data(Locale.forLanguageTag("tr")).name()
+    );
+
+    assertThat(values).containsExactly(
+        "IBM",
+        "EnBW",
+        "イオン",
+        "Koç Holding"
+    );
+  }
+
+  @Test
   @DisplayName("Person module returns pinned catalog values")
   void person_values_are_pinned() {
     var person = fixed("contract#person", Locale.ENGLISH).person();
