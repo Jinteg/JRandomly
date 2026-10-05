@@ -21,7 +21,9 @@ public final class ReplayFileWriter {
 
     private static final System.Logger LOG = System.getLogger(ReplayFileWriter.class.getName());
 
-    private static final Path REPLAY_FILE = Path.of("target", "jrandomly-replay.txt");
+    private static final Path REPLAY_DIR = Path.of("target");
+
+    private static final Path REPLAY_FILE = REPLAY_DIR.resolve("jrandomly-replay.txt");
 
     /**
      * Guards first-write truncation. Once true, all subsequent writes append.
@@ -61,7 +63,7 @@ public final class ReplayFileWriter {
     private static synchronized void ensureInitialized(String initialCaller) throws IOException {
         if (!initialized) {
             // Create parent directories if needed (e.g., fresh checkout without target/)
-            Files.createDirectories(REPLAY_FILE.getParent());
+            Files.createDirectories(REPLAY_DIR);
 
             // Truncate: write header as first content
             String header = createReplayHeader(initialCaller);

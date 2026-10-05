@@ -3,6 +3,7 @@ package de.jinteg.randomly.internal.catalog;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,8 +44,10 @@ public final class NumberedPropertiesCatalog {
             String resource = basePathWithoutSuffix + suffix + ".properties";
             try (InputStream in = NumberedPropertiesCatalog.class.getClassLoader().getResourceAsStream(resource)) {
                 if (in != null) {
-                    p.clear();
-                  p.load(new InputStreamReader(in, StandardCharsets.UTF_8));
+                    try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+                        p.clear();
+                        p.load(reader);
+                    }
                     loaded = true;
                     break;
                 }
