@@ -144,6 +144,10 @@ public final class JRandomly {
    * <p>
    * If a root seed was provided, the replay info includes the root seed
    * so the user can reproduce the exact same run.
+   * <p>
+   * The JRandomly version is included because values are only guaranteed to be
+   * identical for the same version (ADR-0008). Replaying with a different version
+   * logs a warning.
    *
    * @return replay info string
    */
@@ -153,7 +157,8 @@ public final class JRandomly {
     return "-Djrandomly.seed=" + effectiveSeed
         + " -Djrandomly.runStartTime=" + config.runStartTime()
         + " -Djrandomly.locale=" + config.locale().toLanguageTag()
-        + " -Djrandomly.maybeRate=" + config.maybeRate();
+        + " -Djrandomly.maybeRate=" + config.maybeRate()
+        + " -Djrandomly.version=" + JRandomlyVersion.current();
   }
 
   // --- Core modules ---

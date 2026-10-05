@@ -148,11 +148,11 @@ Reconsider if users ask for cross-version replay.
 ### Version in replay information
 
 The JRandomly version is provided by `JRandomlyVersion` (filled in by Maven resource
-filtering) and shown in the replay file header. If `jrandomly.version` /
+filtering), shown in the replay file header and appended to `replayInfo()` as
+`-Djrandomly.version=...`. If `jrandomly.version` /
 `JRANDOMLY_VERSION` is set and differs from the running version, a warning is logged once
 per JVM, because generated values may differ.
 
 ## Follow-ups
 
-- Add `-Djrandomly.version=...` to `replayInfo()` so copied replay arguments carry the
-  version.
+- None at the time of writing. New gaps are added under "Known gaps".

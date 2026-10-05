@@ -66,8 +66,12 @@ copy the logged values and pass them as system properties:
 ``` bash
 mvn test -Djrandomly.seed=123456789 \
 -Djrandomly.runStartTime=2026-02-17T10:15:30Z \
--Djrandomly.locale=de-DE
+-Djrandomly.locale=de-DE \
+-Djrandomly.version=0.3.0
 ```
+
+`jrandomly.version` does not change the generated values. It logs a warning if the run uses
+a different JRandomly version than the recorded one, because values may then differ.
 
 Or retrieve replay info programmatically:
 
@@ -75,6 +79,7 @@ Or retrieve replay info programmatically:
 JRandomly r = JRandomly.randomly();
 System.out.println(r.replayInfo());
 // Output: -Djrandomly.seed=... -Djrandomly.runStartTime=... -Djrandomly.locale=...
+//         -Djrandomly.maybeRate=... -Djrandomly.version=...
 ```
 
 ### What is guaranteed

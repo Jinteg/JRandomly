@@ -1,6 +1,8 @@
 package de.jinteg.randomly;
 
+import de.jinteg.randomly.internal.JRandomlyVersion;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,6 +29,16 @@ class JRandomlyReplayInfoTest {
         assertThat(info).contains("-Djrandomly.seed=42")
                 .contains("-Djrandomly.runStartTime=2026-06-15T10:30:00Z")
                 .contains("-Djrandomly.locale=de-DE");
+    }
+
+    @Test
+    @DisplayName("Replay info contains the running JRandomly version")
+    void replayInfo_containsVersion() {
+        JRandomly r = JRandomly.randomly("ReplayTest#version");
+
+        assertThat(r.replayInfo())
+                .contains("-Djrandomly.version=" + JRandomlyVersion.current())
+                .doesNotContain("-Djrandomly.version=unknown");
     }
 
     @Test

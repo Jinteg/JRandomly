@@ -17,6 +17,10 @@ Changes that alter generated values for an existing seed are listed under
   `person().personById()` (ADR-0007)
 - ADR-0008 defining the scope of the reproducibility contract
 - `ReproducibilityContractTest` pinning generated values for fixed inputs
+- Company domain `company()` with localized catalogs (de, en, ja, tr) and
+  `companyByName()` lookup
+- `replayInfo()` and the replay file header include the JRandomly version; replaying with a
+  different version (`jrandomly.version` / `JRANDOMLY_VERSION`) logs a warning
 
 ### Fixed
 
