@@ -1,5 +1,6 @@
 package de.jinteg.randomly.domain.person;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
@@ -62,6 +63,16 @@ class GenderRegistryTest {
     assertThat(female.shortLabel()).isEqualTo("女");
     assertThat(female.longLabel()).isEqualTo("女性");
     assertThat(registry.all()).hasSize(2);
+  }
+
+  @Test
+  @DisplayName("Keeps the catalog order of gender entries")
+  void keeps_catalog_order() {
+    GenderRegistry registry = GenderRegistry.load(Locale.GERMANY);
+
+    assertThat(registry.all())
+        .extracting(GenderPick::code)
+        .containsExactly("M", "F", "O", "X", "U");
   }
 
   @Test

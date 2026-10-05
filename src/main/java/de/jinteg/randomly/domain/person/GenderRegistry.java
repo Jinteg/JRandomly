@@ -17,7 +17,9 @@ final class GenderRegistry {
   private final Map<String, GenderPick> byCode;
 
   private GenderRegistry(Map<String, GenderPick> byCode) {
-    this.byCode = Map.copyOf(byCode);
+    // Keep catalog order: Map.copyOf iterates in an order that changes per JVM run,
+    // which would break seed-based reproducibility of gender().
+    this.byCode = Collections.unmodifiableMap(new LinkedHashMap<>(byCode));
   }
 
   /**
