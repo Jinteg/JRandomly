@@ -33,6 +33,10 @@ Changes that alter generated values for an existing seed are listed under
 - `finance().stock()` and `finance().stockSymbol()` return different values for the
   locales `de` and `en`, because all catalog entries are now loaded and ordered by key
   prefix, then by number
+- `finance().currency()`, `currencyCode()` and `currencySymbol()` select from a fixed list
+  of 36 ISO 4217 currencies instead of the JDK's currency set, whose order and content
+  depend on the JDK version; `currencySymbol()` renders symbols for the configured locale
+  instead of the JVM default locale
 - Values that contained broken umlauts or other non-ASCII characters are now returned
   correctly encoded (text, stock and crypto catalogs)
 

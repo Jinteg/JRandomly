@@ -6,6 +6,7 @@ import de.jinteg.randomly.internal.catalog.NumberedPropertiesCatalog;
 import de.jinteg.randomly.internal.catalog.RawParserUtil;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 import static java.util.Locale.ENGLISH;
 
@@ -16,7 +17,20 @@ public final class FinanceRandomly {
 
   private static final String STOCK_CATALOG_PATH = "de/jinteg/randomly/catalog/finance/stocks";
   private static final String CRYPTO_ASSET_CATALOG_PATH = "de/jinteg/randomly/catalog/finance/crypto_assets";
-  private static final List<Currency> AVAILABLE_CURRENCIES = List.copyOf(Currency.getAvailableCurrencies());
+
+  /**
+   * Fixed, ordered list of widely used ISO 4217 currencies.
+   *
+   * <p>Not derived from {@link Currency#getAvailableCurrencies()}: that set has no defined
+   * order and its content changes with JDK updates, which would break reproducibility
+   * (ADR-0008).
+   */
+  private static final List<Currency> AVAILABLE_CURRENCIES = Stream.of(
+          "AED", "ARS", "AUD", "BRL", "CAD", "CHF", "CLP", "CNY", "COP", "CZK", "DKK", "EGP",
+          "EUR", "GBP", "HKD", "HUF", "IDR", "ILS", "INR", "JPY", "KRW", "MXN", "MYR", "NOK",
+          "NZD", "PHP", "PLN", "SAR", "SEK", "SGD", "THB", "TRY", "TWD", "USD", "VND", "ZAR")
+      .map(Currency::getInstance)
+      .toList();
 
   private final JRandomly randomly;
 
@@ -203,12 +217,12 @@ public final class FinanceRandomly {
   }
 
   /**
-   * Returns a random currency symbol.
+   * Returns a random currency symbol as displayed in the configured locale.
    *
    * @return currency symbol, e.g. "$", "€", or "£"
    */
   public String currencySymbol() {
-    return currency().getSymbol();
+    return currency().getSymbol(randomly.getLocale());
   }
 
   /**
@@ -220,7 +234,7 @@ public final class FinanceRandomly {
   public String currencySymbol(Collection<String> excluding) {
     Objects.requireNonNull(excluding, "excluding");
     List<String> filtered = AVAILABLE_CURRENCIES.stream()
-        .map(Currency::getSymbol)
+        .map(currency -> currency.getSymbol(randomly.getLocale()))
         .filter(symbol -> !excluding.contains(symbol))
         .toList();
     return randomly.elementOf(filtered);

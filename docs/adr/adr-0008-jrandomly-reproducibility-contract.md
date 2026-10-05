@@ -86,12 +86,16 @@ The guarantee also depends on inputs that only the caller controls:
 
 ## Known gaps
 
-- `finance().currency()`, `currencyCode()` and `currencySymbol()` select from
-  `Currency.getAvailableCurrencies()`. Order and content of that set depend on the JDK
-  (ISO 4217 updates). These methods are not reproducible across JDK versions and are
-  excluded from `ReproducibilityContractTest` until they use a fixed currency list.
-- `replayInfo()` does not contain the JRandomly version, although the version is part of
-  the guarantee. The replay file header contains a hard-coded version string.
+- Values rendered by the JDK from locale data, such as `finance().currencySymbol()`
+  (`Currency.getSymbol(locale)`), come from the JDK's CLDR data. The **selection** is
+  reproducible, but the rendered symbol may differ between JDK versions if CLDR changes.
+
+### Resolved
+
+- `finance().currency*()` selected from `Currency.getAvailableCurrencies()`, whose order
+  and content depend on the JDK. It now uses a fixed, ordered list of 36 ISO 4217
+  currencies. `currencySymbol()` now renders symbols for the configured locale instead of
+  the JVM default locale.
 
 ## Consequences
 
@@ -143,5 +147,4 @@ Reconsider if users ask for cross-version replay.
 
 ## Follow-ups
 
-- Replace `Currency.getAvailableCurrencies()` with a fixed, ordered currency list.
 - Add the JRandomly version to `replayInfo()` and to the replay file header.

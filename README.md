@@ -92,8 +92,7 @@ For stable results:
 - pass ordered collections (`List`, `LinkedHashSet`, `TreeSet`) to `elementOf` / `elementsOf`,
 - use `dateTime(ZoneId)` if values must not depend on the system time zone.
 
-`finance().currency*()` methods currently depend on the JDK's currency list and are not
-reproducible across JDK versions. Details: [ADR-0008](docs/adr/adr-0008-jrandomly-reproducibility-contract.md).
+Details: [ADR-0008](docs/adr/adr-0008-jrandomly-reproducibility-contract.md).
 
 ## Configuration
 

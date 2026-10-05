@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Currency;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
@@ -24,10 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * expected values. If the change is intended (e.g. catalog data or selection logic changed),
  * update the expected values and document the change in the CHANGELOG under
  * "Reproducibility".
- *
- * <p>Not covered yet: {@code finance().currency*()} depends on
- * {@code Currency.getAvailableCurrencies()}, whose order and content depend on the JDK
- * (see ADR-0008, known gaps).
  */
 class ReproducibilityContractTest {
 
@@ -193,6 +190,30 @@ class ReproducibilityContractTest {
         "PANW",
         "XRP-EUR",
         "DOGE-USD"
+    );
+  }
+
+  @Test
+  @DisplayName("Currency values are pinned and independent of the JVM default locale")
+  void currency_values_are_pinned() {
+    var finance = fixed("contract#currency", Locale.GERMANY).finance();
+
+    List<String> values = asStrings(
+        finance.currencyCode(),
+        finance.currencyCode(),
+        finance.currency(List.of(Currency.getInstance("EUR"))).getCurrencyCode(),
+        finance.currencySymbol(),
+        finance.currencySymbol(),
+        finance.currencyCode(List.of("USD"))
+    );
+
+    assertThat(values).containsExactly(
+        "SEK",
+        "VND",
+        "MXN",
+        "PHP",
+        "R$",
+        "AUD"
     );
   }
 
