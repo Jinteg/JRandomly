@@ -40,19 +40,25 @@ testImplementation 'de.jinteg.jrandomly:jrandomly-testdata:0.3.0'
 ``` java
 import de.jinteg.randomly.JRandomly;
 
-// Create an instance with defaults (auto-seed, system locale)
-JRandomly r = JRandomly.randomly();
+// Create a scoped instance: reproducible and safe for parallel tests
+JRandomly r = JRandomly.randomly("OrderTest#createsOrder");
 
 // Core utilities
 int age      = r.intBetween(18, 65);
 boolean flag = r.bool();
 
 // Date/Time generation (anchored to runStartTime, not wall-clock)
-LocalDate birthday  = r.dateTime().pastDate();
-Instant   timestamp = r.dateTime().futureInstant();
+LocalDate birthday = r.dateTime().localDateBefore(365 * 30);
+Instant   dueAt    = r.dateTime().instantInFuture(1, 30);
 
-// Domain modules
-String ticker = r.finance().stockSymbol();
+// Text and ids
+String productName = r.text().compoundName();
+String orderId     = r.id().prefixedId("ORD-", 12);
+
+// Domain modules (locale-aware catalogs)
+StockPick   stock    = r.finance().stock(Locale.US);
+PersonPick  customer = r.person().data(Locale.GERMANY);
+CompanyPick supplier = r.company().companyByName("SAP", Locale.GERMANY);
 
 // Maybe – nullable test data with configurable absence probability
 String nickname = r.maybeText("FooBar").orElse("");
@@ -119,6 +125,10 @@ JRandomly r1 = JRandomly.randomly("orderTest");
 JRandomly r2 = JRandomly.randomly("userTest");
 // r1 and r2 produce independent, reproducible streams
 ```
+
+A `JRandomly` instance is **not thread-safe**. Create one instance per test (or per thread)
+instead of sharing an instance between threads. Unscoped `randomly()` instances depend on
+their creation order and are therefore not reproducible in parallel runs.
 
 ## Modules
 

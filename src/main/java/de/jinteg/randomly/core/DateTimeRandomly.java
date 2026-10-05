@@ -8,6 +8,11 @@ import java.util.Objects;
 
 /**
  * Provides random date and time values.
+ *
+ * <p>All values are anchored to {@code runStartTime} instead of the wall clock (ADR-0004):
+ * {@link #instant()}, {@link #localDate()} and {@link #localDateTime()} return the anchor
+ * itself ("now" / "today" of the test run); the other methods return random values
+ * relative to it.
  */
 public final class DateTimeRandomly {
 
@@ -28,9 +33,15 @@ public final class DateTimeRandomly {
     // --- Instant ---
 
     /**
-     * Returns the current instant.
+     * Returns the anchor instant: {@code runStartTime} of this instance.
      *
-     * @return current instant
+     * <p>This value is not random and not the wall-clock time. It is the test run's "now",
+     * identical for all calls of the same run, so that tests can compare generated values
+     * against a stable reference. Use {@link #instantBefore(int)},
+     * {@link #instantInPast(int, int)} or {@link #instantInFuture(int, int)} for random
+     * instants.
+     *
+     * @return anchor instant ("now" of the test run)
      */
     public Instant instant() {
         return randomly.getRunStartTime();
@@ -129,9 +140,13 @@ public final class DateTimeRandomly {
     // --- LocalDate ---
 
     /**
-     * Returns a random local date.
+     * Returns the anchor date: the date of {@code runStartTime} in this instance's time zone.
      *
-     * @return random local date
+     * <p>This value is not random. It is the test run's "today", identical for all calls of
+     * the same run. Use {@link #localDateBefore(int)} or {@link #localDateBetween(LocalDate,
+     * LocalDate)} for random dates.
+     *
+     * @return anchor date ("today" of the test run)
      */
     public LocalDate localDate() {
         return anchorLocalDate();
@@ -169,9 +184,14 @@ public final class DateTimeRandomly {
     // --- LocalDateTime ---
 
     /**
-     * Returns a random local date-time.
+     * Returns the anchor date-time: {@code runStartTime} in this instance's time zone.
      *
-     * @return random local date-time
+     * <p>This value is not random. It is the test run's "now", identical for all calls of
+     * the same run. Use {@link #localDateTimeBefore(int)},
+     * {@link #localDateTimeInPast(int, int)} or {@link #localDateTimeInFuture(int, int)}
+     * for random date-times.
+     *
+     * @return anchor date-time ("now" of the test run)
      */
     public LocalDateTime localDateTime() {
         return anchorLocalDateTime();

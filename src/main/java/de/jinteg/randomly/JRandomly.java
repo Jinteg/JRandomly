@@ -21,6 +21,14 @@ import java.util.stream.Collectors;
 
 /**
  * Main entry point for the JRandomly library.
+ *
+ * <p><b>Thread safety:</b> an instance is not thread-safe, because it uses a single
+ * {@link RandomGenerator}. Create one instance per test or thread, preferably with
+ * {@link #randomly(String)}, whose values are independent of creation order and therefore
+ * reproducible in parallel test runs. Unscoped {@link #randomly()} instances depend on
+ * their creation order.
+ *
+ * <p><b>Reproducibility:</b> see ADR-0008 for what is guaranteed.
  */
 public final class JRandomly {
 

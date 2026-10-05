@@ -4,6 +4,11 @@
 **Date:** 2026-02-07  
 **Revised:** 2026-02-15
 
+> **Implementation status (2026-10-05):** Mechanism **B** (locale parameter on the generator
+> method, e.g. `finance().stock(Locale)`, `person().data(Locale)`, `company().data(Locale)`)
+> is implemented. Mechanism **A** (`r.finance(Locale)` on the domain entry point) is not
+> implemented yet. Decision 4 (locale does not influence the RNG stream) applies as written.
+
 ## Context
 
 JRandomly must provide locale-aware domain catalogs (EN/DE initially), with the ability to override locale for a specific domain call.
