@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.fail;
  *
  * <p>Validation rules:
  * <ul>
- *   <li>Every catalog file must be valid UTF-8.</li>
+ *   <li>Every catalog file must be valid UTF-8 without a byte order mark.</li>
  *   <li>Every non-empty, non-comment line must contain a key-value separator.</li>
  *   <li>Keys must contain a numeric id, such as {@code prefix.1} or
  *       {@code prefix.field.1} or {@code prefix.1.suffix}.</li>
@@ -110,6 +110,12 @@ class CatalogIntegrityTest {
     } catch (CharacterCodingException e) {
       fail("File is not valid UTF-8: " + propertyFile, e);
     }
+
+    boolean startsWithByteOrderMark = bytes.length >= 3
+        && bytes[0] == (byte) 0xEF && bytes[1] == (byte) 0xBB && bytes[2] == (byte) 0xBF;
+    assertThat(startsWithByteOrderMark)
+        .as("File must not start with a UTF-8 byte order mark: %s", propertyFile)
+        .isFalse();
   }
 
   private static void assertNumberedCatalogIntegrity(Path propertyFile) throws IOException {
