@@ -11,8 +11,8 @@ Reproducible, random and locale-aware test data generator for Java 21+.
 
 - **Reproducible** – Every test run can be replayed with the same seed, `runStartTime` and locale
 - **Parallel-safe** – Scoped instances (`randomly("myScope")`) produce deterministic results even in parallel tests
-- **Locale-aware** – Domain catalogs (e.g. finance) support locale overrides at domain or method level
-- **Fluent API** – Discoverable modules: `r.dateTime()`, `r.text()`, `r.id()`, `r.finance()`, `r.maybe()`
+- **Locale-aware** – Domain catalogs (finance, person, company) support locale overrides at domain or method level
+- **Fluent API** – Discoverable modules: `r.dateTime()`, `r.text()`, `r.id()`, `r.finance()`, `r.person()`, `r.company()`, `r.maybe()`
 - **Zero dependencies** – Pure Java 21, no external runtime dependencies
 - **Replay info** – Copy-paste friendly CLI args to reproduce any run
 
@@ -129,7 +129,12 @@ JRandomly r2 = JRandomly.randomly("userTest");
 | **Text**     | `r.text()`     | String generation utilities                            |
 | **Id**       | `r.id()`       | Identifier generation                                  |
 | **Maybe**    | `r.maybe()`    | Nullable/optional test data                            |
-| **Finance**  | `r.finance()`  | `stockSymbol()`, locale-aware catalogs                 |
+| **Finance**  | `r.finance()`  | `stock()`, `stockBySymbol("AAPL")`, `cryptoAsset()`, `currencyCode()` |
+| **Person**   | `r.person()`   | `data()`, `personById(7)`, `gender()`                  |
+| **Company**  | `r.company()`  | `data()`, `companyByName("SAP")`                       |
+
+Domain catalogs are available for `de`, `en`, `ja` and `tr` (person, company) and `de`, `en`
+(finance stocks, text). An unsupported locale fails fast instead of silently falling back.
 
 ## Requirements
 

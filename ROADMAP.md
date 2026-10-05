@@ -1,6 +1,6 @@
 # JRandomly – Roadmap
 
-> Living document. Updated: 2026-02-18.
+> Living document. Updated: 2026-10-05.
 > This roadmap captures planned features, improvements, and research topics.
 > Items are grouped by phase, not by fixed timeline.
 
@@ -43,6 +43,7 @@
 ### Quality
 
 - [ ] Increase test coverage for edge cases (long overflow, empty catalogs, locale fallback)
+- [x] Reproducibility contract test pinning generated values (ADR-0008)
 - [ ] Property-based tests for determinism guarantees
 - [ ] Performance baseline (micro-benchmarks for hot paths)
 
@@ -50,7 +51,7 @@
 
 ## Phase 2 – Extensibility & Domains
 
-### Custom domain extensions (ADR-0007, experimental)
+### Custom domain extensions (planned ADR-0009, experimental)
 
 - [ ] `JRandomlyDomain` marker interface
 - [ ] `r.domain(Class<T>)` with per-instance caching
@@ -58,9 +59,9 @@
 
 ### Built-in domains
 
-- [ ] `r.person()` – names, birth dates, emails (locale-aware)
+- [x] `r.person()` – names, birth dates, emails, gender (locale-aware: de, en, ja, tr)
 - [ ] `r.address()` – streets, cities, zip codes (locale-aware)
-- [ ] `r.company()` – company names, VAT IDs
+- [x] `r.company()` – company names, addresses, contact data, VAT IDs (de, en, ja, tr)
 - [ ] `r.net()` – emails, URLs, IP addresses
 
 ### Domain object model (research)
@@ -117,14 +118,3 @@
 | JavaFaker      | 2026-02-07      | Determinism must be first-class, not best-effort                |
 | Datafaker      | 2026-02-12      | Inspiration for breadth, but not for core design                |
 | Value-Provider | 2026-02-18      | Replay UX + traceability inspiration; composition > inheritance |
-
----
-
-## Zusammenfassung
-
-1. **Java 17 vs. 21:** Aktuell rein technisch portierbar, aber kein Grund dafür. Java 21 LTS ist die richtige Baseline.
-2. **ADR-0007** definiert `JRandomlyDomain` + `domain(Class<T>)` als experimentelle API mit Caching.
-3. **Instance Key** wird deterministische Traceability ermöglichen – als Basis für `traced()` und zukünftiges Object-Relation-Tracking.
-4. **ROADMAP.md** gibt uns den Kompass – priorisiert Phase 1 (Stabilisierung) vor Phase 2 (Erweiterbarkeit).
-
-Die Dateien kannst du direkt unter `docs/adr/adr-0007-jrandomly_custom_domain_extensions.md` und `docs/ROADMAP.md` ablegen. Soll ich noch etwas anpassen?
