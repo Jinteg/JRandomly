@@ -36,6 +36,10 @@ Changes that alter generated values for an existing seed are listed under
 - US phone numbers in the English person and company catalogs use the range reserved for
   fictional use (`+1 <area code> 555 0100`–`0199`); company entry 25 is renamed from Twitter
   to X (`x.example.com`). The selection of entries is unchanged; only these field values differ
+- German phone numbers in the person and company catalogs use the numbers reserved by the
+  Bundesnetzagentur for film and TV ("drama numbers"): landline `+49 30 23125xxx`,
+  `+49 40 66969xxx`, `+49 69 90009xxx`, `+49 89 99998xxx`, `+49 221 4710xxx`, mobile
+  `+49 171 39200xx` and `+49 176 040690xx`. Only the phone field values differ
 
 ## [0.3.0] - 2026-10-05
 
