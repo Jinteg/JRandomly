@@ -15,11 +15,14 @@ Changes that alter generated values for an existing seed are listed under
 - `fork(String name)`: named, independent random streams within an instance. Values of a
   fork depend only on the parent's seed and the name, so they stay stable when other calls
   are added; one fork per thread makes multithreaded test code reproducible (ADR-0002)
+- `jrandomly.replayFile` / `JRANDOMLY_REPLAY_FILE`: configure the replay file location
+  (e.g. `build/jrandomly-replay.txt` for Gradle) or disable it with `off`
 - `Automatic-Module-Name: de.jinteg.randomly` in the JAR manifest for users on the module path
 
 ### Fixed
 
 - The replay file header could name the caller of another thread in parallel test runs
+- Replay file entries of parallel tests could interleave; they are now written under a lock
 - README Quick Start used methods that do not exist (`pastDate()`, `futureInstant()`)
 - Javadoc of `dateTime().instant()`, `localDate()` and `localDateTime()` described random
   values; they return the `runStartTime` anchor ("now" / "today" of the test run)

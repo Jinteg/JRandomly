@@ -5,6 +5,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,6 +36,76 @@ class ReplayFileWriterTest {
         System.clearProperty("jrandomly.seed");
         System.clearProperty("jrandomly.runStartTime");
         System.clearProperty("jrandomly.locale");
+        System.clearProperty(ReplayFileWriter.PROP_REPLAY_FILE);
+        // Later tests in the same JVM must resolve the default location again
+        ReplayFileWriter.resetForTesting();
+    }
+
+    @Test
+    @DisplayName("Replay file location can be configured")
+    void replayFile_usesConfiguredPath(@TempDir Path tempDir) throws IOException {
+        Path customFile = tempDir.resolve("nested/dir/replay.txt");
+        System.setProperty(ReplayFileWriter.PROP_REPLAY_FILE, customFile.toString());
+
+        JRandomly.randomly("FileTest#custom");
+
+        assertThat(customFile).exists();
+        assertThat(Files.readString(customFile)).contains("FileTest#custom");
+        assertThat(REPLAY_FILE).doesNotExist();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"off", "OFF", "false", "none", " off "})
+    @DisplayName("Replay file can be disabled")
+    void replayFile_canBeDisabled(String value) {
+        System.setProperty(ReplayFileWriter.PROP_REPLAY_FILE, value);
+
+        JRandomly.randomly("FileTest#off");
+
+        assertThat(REPLAY_FILE).doesNotExist();
+    }
+
+    @Test
+    @DisplayName("An unusable replay file location never fails the test run")
+    void replayFile_unusableLocationDoesNotFail(@TempDir Path tempDir) {
+        // A directory cannot be written as a file
+        System.setProperty(ReplayFileWriter.PROP_REPLAY_FILE, tempDir.toString());
+
+        JRandomly r1 = JRandomly.randomly("FileTest#unusable1");
+        JRandomly r2 = JRandomly.randomly("FileTest#unusable2");
+
+        assertThat(r1.intBetween(1, 10)).isBetween(1, 10);
+        assertThat(r2.intBetween(1, 10)).isBetween(1, 10);
+    }
+
+    @Test
+    @DisplayName("Many parallel instances write complete, non-interleaved lines")
+    void replayFile_parallelEntriesDoNotInterleave() throws Exception {
+        int threads = 8;
+        int instancesPerThread = 50;
+        try (ExecutorService executor = Executors.newFixedThreadPool(threads)) {
+            List<Future<?>> futures = new ArrayList<>();
+            for (int t = 0; t < threads; t++) {
+                int thread = t;
+                futures.add(executor.submit(() -> {
+                    for (int i = 0; i < instancesPerThread; i++) {
+                        JRandomly.randomly("FileTest#parallel-" + thread + "-" + i);
+                    }
+                }));
+            }
+            for (Future<?> future : futures) {
+                future.get();
+            }
+        }
+
+        List<String> entries = Files.readAllLines(REPLAY_FILE).stream()
+                .filter(line -> line.contains("FileTest#parallel-"))
+                .toList();
+        assertThat(entries)
+                .hasSize(threads * instancesPerThread)
+                .allMatch(line -> line.matches(
+                        "^\\S+ \\| scoped\\(\"FileTest#parallel-\\d+-\\d+\"\\) \\| -Djrandomly\\.seed=.*"
+                                + "-Djrandomly\\.version=\\S+$"));
     }
 
     @Test

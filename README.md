@@ -66,8 +66,9 @@ String nickname = r.maybeText("FooBar").orElse("");
 
 ## Reproducibility
 
-JRandomly logs replay information at instance creation. To reproduce a failing test run,
-copy the logged values and pass them as system properties:
+JRandomly writes one line of replay information per instance to `target/jrandomly-replay.txt`
+(configurable via `jrandomly.replayFile`, or `off`). To reproduce a failing test run, copy the
+values of that run and pass them as system properties:
 
 ``` bash
 mvn test -Djrandomly.seed=123456789 \
@@ -113,6 +114,7 @@ Details: [ADR-0008](docs/adr/adr-0008-jrandomly-reproducibility-contract.md).
 | `jrandomly.runStartTime` | `JRANDOMLY_RUN_START_TIME` | `Instant.now()`       | Time anchor for date generators |
 | `jrandomly.locale`       | `JRANDOMLY_LOCALE`         | `Locale.getDefault()` | Default locale for catalogs     |
 | `jrandomly.version`      | `JRANDOMLY_VERSION`        | –                     | Version a replay was recorded with; logs a warning if it differs from the running version |
+| `jrandomly.replayFile`   | `JRANDOMLY_REPLAY_FILE`    | `target/jrandomly-replay.txt` | Replay file location, or `off` to disable it (e.g. `build/jrandomly-replay.txt` for Gradle) |
 
 **Precedence:** Builder API > System Property > Environment Variable > Default
 

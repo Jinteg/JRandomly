@@ -28,6 +28,18 @@ This file:
 - lives in `target/` so `mvn clean` removes it,
 - contains one line per instance (compact, greppable).
 
+**Update 2026-10-05 (version 0.4.0):** The location is configurable via
+`jrandomly.replayFile` / `JRANDOMLY_REPLAY_FILE`, resolved once per JVM:
+
+- not set → `target/jrandomly-replay.txt` (unchanged default),
+- `off` (also `false`, `none`) → no replay file and no file access at all,
+- any other value → used as file path, e.g. `build/jrandomly-replay.txt` for Gradle builds.
+
+Entries are appended under a lock, so lines of parallel tests never interleave. File errors
+never fail a test run: for an explicitly configured path a single `WARNING` is logged, for
+the default location only `DEBUG`. Forks (`fork(name)`) do not write entries; they are
+reproducible from their parent.
+
 ### 3) Suppress replay file when seed is externally set
 
 When `jrandomly.seed` is explicitly provided (via system property or env), the replay file is **still written** but a header line indicates that the run is already seeded:
