@@ -40,6 +40,10 @@ Changes that alter generated values for an existing seed are listed under
   Bundesnetzagentur for film and TV ("drama numbers"): landline `+49 30 23125xxx`,
   `+49 40 66969xxx`, `+49 69 90009xxx`, `+49 89 99998xxx`, `+49 221 4710xxx`, mobile
   `+49 171 39200xx` and `+49 176 040690xx`. Only the phone field values differ
+- Turkish and Japanese phone numbers in the person and company catalogs no longer use
+  operator ranges in service. Neither country reserves numbers for fictional use, so the
+  catalogs use ranges that are not allocated in the national numbering plans: `+90 520 …`
+  (BTK) and `+81 60 0…` (MIC allows only `060-1` to `060-9`). Only the phone field values differ
 
 ## [0.3.0] - 2026-10-05
 
