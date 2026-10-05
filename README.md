@@ -77,6 +77,24 @@ System.out.println(r.replayInfo());
 // Output: -Djrandomly.seed=... -Djrandomly.runStartTime=... -Djrandomly.locale=...
 ```
 
+### What is guaranteed
+
+Within the **same JRandomly version**, the same seed, scope, `runStartTime`, locale and
+`maybeRate` produce the same values on every run, JVM and operating system.
+
+Across versions, values for an existing seed may change when catalog data or selection
+logic changes. Such changes are listed in the [CHANGELOG](CHANGELOG.md) under
+**Reproducibility**. To replay a run, use the JRandomly version of that run.
+
+For stable results:
+
+- use scoped instances (`randomly("myScope")`) in parallel tests,
+- pass ordered collections (`List`, `LinkedHashSet`, `TreeSet`) to `elementOf` / `elementsOf`,
+- use `dateTime(ZoneId)` if values must not depend on the system time zone.
+
+`finance().currency*()` methods currently depend on the JDK's currency list and are not
+reproducible across JDK versions. Details: [ADR-0008](docs/adr/adr-0008-jrandomly-reproducibility-contract.md).
+
 ## Configuration
 
 | System Property          | Env Variable               | Default               | Description                     |
