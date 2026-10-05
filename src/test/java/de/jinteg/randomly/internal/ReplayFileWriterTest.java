@@ -3,11 +3,18 @@ package de.jinteg.randomly.internal;
 import de.jinteg.randomly.JRandomly;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -43,6 +50,47 @@ class ReplayFileWriterTest {
                 .contains("-Djrandomly.seed=42")
                 .contains("-Djrandomly.maybeRate=0.")
                 .contains("scoped(\"FileTest#first\")");
+    }
+
+    @Test
+    @DisplayName("Header names the caller outside of JRandomly, also when using the builder")
+    void replayFile_headerNamesInitialCaller() throws IOException {
+        JRandomly.builder().withScope("FileTest#caller").build();
+
+        assertThat(Files.readString(REPLAY_FILE))
+                .contains("# Initial caller: " + ReplayFileWriterTest.class.getName()
+                        + "#replayFile_headerNamesInitialCaller");
+    }
+
+    @Test
+    @DisplayName("Concurrent first instances write exactly one header")
+    void replayFile_concurrentFirstInstancesWriteOneHeader() throws Exception {
+        int threads = 8;
+        CountDownLatch start = new CountDownLatch(1);
+        try (ExecutorService executor = Executors.newFixedThreadPool(threads)) {
+            List<Future<JRandomly>> futures = new ArrayList<>();
+            for (int i = 0; i < threads; i++) {
+                String scope = "FileTest#parallel" + i;
+                futures.add(executor.submit(() -> {
+                    start.await();
+                    return JRandomly.randomly(scope);
+                }));
+            }
+            start.countDown();
+            for (Future<JRandomly> future : futures) {
+                future.get();
+            }
+        }
+
+        List<String> lines = Files.readAllLines(REPLAY_FILE);
+        assertThat(lines)
+                .filteredOn(line -> line.startsWith("# Initial caller: "))
+                .singleElement()
+                .asString()
+                .contains(ReplayFileWriterTest.class.getName());
+        assertThat(lines)
+                .filteredOn(line -> line.contains("FileTest#parallel"))
+                .hasSize(threads);
     }
 
     @Test

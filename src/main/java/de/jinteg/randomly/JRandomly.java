@@ -36,7 +36,7 @@ public final class JRandomly {
    * Initialized lazily on first access, cached for the entire JVM lifetime.
    */
   private static final long AUTO_ROOT_SEED = SeedDerivation.seedFromEntropy(System.nanoTime());
-  private static String initialCaller;
+
   private final JRandomlyConfig config;
   private final RandomGenerator rng;
   private final long instanceSeed;
@@ -53,7 +53,7 @@ public final class JRandomly {
             + " runStartTime=" + config.runStartTime()
             + " locale=" + config.locale().toLanguageTag());
 
-    ReplayFileWriter.writeEntry(scopeLabel, replayInfo(), initialCaller);
+    ReplayFileWriter.writeEntry(scopeLabel, replayInfo(), JRandomly::captureInitialCaller);
   }
 
   /**
@@ -63,7 +63,6 @@ public final class JRandomly {
    * @return JRandomly instance
    */
   public static JRandomly randomly() {
-    initialCaller = captureInitialCaller();
     return builder().build();
   }
 
@@ -75,7 +74,6 @@ public final class JRandomly {
    * @return JRandomly instance
    */
   public static JRandomly randomly(String scopeLabel) {
-    initialCaller = captureInitialCaller();
     return builder().withScope(scopeLabel).build();
   }
 
@@ -85,21 +83,30 @@ public final class JRandomly {
    * @return JRandomly instance
    */
   public static Builder builder() {
-    if (initialCaller == null) {
-      initialCaller = captureInitialCaller();
-    }
     return new Builder();
   }
 
   // --- Observability ---
 
+  /**
+   * Returns the first caller outside of JRandomly and its replay writer, e.g.
+   * {@code com.example.OrderTest#createsOrder}.
+   *
+   * <p>Called once per JVM by {@link ReplayFileWriter} while it writes the replay file
+   * header, so no caller has to be stored in shared state.
+   */
   private static String captureInitialCaller() {
     return StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
         .walk(frames -> frames
-            .filter(f -> !f.getDeclaringClass().equals(JRandomly.class))
+            .filter(f -> !isLibraryFrame(f.getDeclaringClass()))
             .findFirst()
             .map(f -> f.getClassName() + "#" + f.getMethodName())
             .orElse("unknown"));
+  }
+
+  private static boolean isLibraryFrame(Class<?> declaringClass) {
+    Class<?> nestHost = declaringClass.getNestHost();
+    return nestHost == JRandomly.class || nestHost == ReplayFileWriter.class;
   }
 
   /**

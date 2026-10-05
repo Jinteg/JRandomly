@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.function.Supplier;
 
 /**
  * Writes replay information to {@code target/jrandomly-replay.txt}.
@@ -37,10 +38,13 @@ public final class ReplayFileWriter {
      * Writes a single replay line for the given instance.
      * Called from {@code JRandomly} constructor.
      *
-     * @param scopeLabel the scope label (e.g. {@code scoped("MyTest#x")})
-     * @param replayInfo the CLI-friendly replay string
+     * @param scopeLabel    the scope label (e.g. {@code scoped("MyTest#x")})
+     * @param replayInfo    the CLI-friendly replay string
+     * @param initialCaller supplies the caller shown in the file header; only invoked once
+     *                      per JVM, when the header is written
      */
-    public static void writeEntry(String scopeLabel, String replayInfo, String initialCaller) {
+    public static void writeEntry(String scopeLabel, String replayInfo,
+                                  Supplier<String> initialCaller) {
         try {
             ensureInitialized(initialCaller);
 
@@ -60,13 +64,13 @@ public final class ReplayFileWriter {
         }
     }
 
-    private static synchronized void ensureInitialized(String initialCaller) throws IOException {
+    private static synchronized void ensureInitialized(Supplier<String> initialCaller) throws IOException {
         if (!initialized) {
             // Create parent directories if needed (e.g., fresh checkout without target/)
             Files.createDirectories(REPLAY_DIR);
 
             // Truncate: write header as first content
-            String header = createReplayHeader(initialCaller);
+            String header = createReplayHeader(initialCaller.get());
 
             Files.writeString(REPLAY_FILE, header,
                     StandardCharsets.UTF_8,
