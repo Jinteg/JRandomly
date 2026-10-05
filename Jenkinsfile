@@ -27,23 +27,15 @@ pipeline {
             }
         }
 
-        stage('Build & Unit Tests') {
+        stage('Build, Tests & Static Code Analysis') {
             steps {
-                sh 'mvn -B clean test'
+                // One Maven run: compile, test, then PMD, SpotBugs and Checkstyle
+                sh 'mvn -B clean verify'
             }
             post {
                 always {
                     junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
-                }
-            }
-        }
 
-        stage('Static Code Analysis') {
-            steps {
-                sh 'mvn -B verify -DskipTests'
-            }
-            post {
-                always {
                     // SpotBugs
                     recordIssues enabledForFailure: true, tools: [
                         spotBugs(pattern: '**/target/spotbugsXml.xml')
@@ -75,7 +67,7 @@ pipeline {
 
     post {
         success {
-            echo '✅ ${env.JOB_NAME} - CI build completed successfully.'
+            echo "✅ ${env.JOB_NAME} - CI build completed successfully."
         }
         failure {
             echo "❌ ${env.JOB_NAME} - CI build failed."
