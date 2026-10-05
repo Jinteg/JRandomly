@@ -31,6 +31,12 @@ Changes that alter generated values for an existing seed are listed under
 
 - Thread safety of `JRandomly` instances documented (one instance per test or thread)
 
+### Reproducibility
+
+- US phone numbers in the English person and company catalogs use the range reserved for
+  fictional use (`+1 <area code> 555 0100`–`0199`); company entry 25 is renamed from Twitter
+  to X (`x.example.com`). The selection of entries is unchanged; only these field values differ
+
 ## [0.3.0] - 2026-10-05
 
 ### Added
