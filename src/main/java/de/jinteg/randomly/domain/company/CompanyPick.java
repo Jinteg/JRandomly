@@ -12,8 +12,10 @@ package de.jinteg.randomly.domain.company;
  * @param country      country name
  * @param countryCode  ISO-like country code
  * @param website      company website
- * @param email        company email address
- * @param phone        company phone number
+ * @param email        company email address, {@code null} if the catalog value is not a valid
+ *                     email address
+ * @param phone        company phone number, {@code null} if the catalog value is not a valid
+ *                     phone number
  * @param sector       business sector
  * @param industry     business industry
  * @param vatId        VAT or tax identifier
